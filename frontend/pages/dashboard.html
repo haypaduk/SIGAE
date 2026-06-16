@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - SIGAE</title>
+    <link rel="stylesheet" href="/css/main.css">
+</head>
+<body>
+    <div class="dashboard-container">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <h2>SIGAE</h2>
+                <p>Gestión de Aulas</p>
+            </div>
+            <ul class="sidebar-menu">
+                <li class="active"><a href="#" onclick="loadPage('/dashboard')">📊 Dashboard</a></li>
+                <li><a href="#" onclick="loadPage('/infraestructura')">🏢 Infraestructura</a></li>
+                <li><a href="#" onclick="loadPage('/solicitudes')">📝 Solicitudes</a></li>
+                <li><a href="#" onclick="loadPage('/reportes')">📈 Reportes</a></li>
+                <li><button onclick="logout()" style="background:none;border:none;color:white;cursor:pointer;width:100%;text-align:left;padding:12px 25px;font-size:1rem;">🚪 Cerrar Sesión</button></li>            
+            </ul>
+        </div>
+        
+        <!-- Main Content -->
+        <div class="main-content">
+            <div class="top-bar">
+                <div class="top-bar-title">Dashboard General</div>
+                <div class="top-bar-user">
+                    <div class="notifications" id="notifications">
+                        🔔
+                        <span class="notifications-badge" id="notif-count">0</span>
+                    </div>
+                    <div class="user-avatar" id="user-avatar">A</div>
+                    <span id="user-name">Cargando...</span>
+                </div>
+            </div>
+            
+            <div class="content">
+                <!-- Tarjetas de estadísticas -->
+                <div class="stats-grid" id="stats-grid">
+                    <div class="stat-card">Cargando estadísticas...</div>
+                </div>
+                
+                <!-- Listas de aulas -->
+                <div class="lists-container">
+                    <div class="list-card">
+                        <h3>🔥 Alta Demanda</h3>
+                        <div id="alta-demanda-list">
+                            <p>Cargando...</p>
+                        </div>
+                    </div>
+                    
+                    <div class="list-card">
+                        <h3>⚠️ Espacios Subutilizados</h3>
+                        <div id="subutilizadas-list">
+                            <p>Cargando...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- No necesita script adicional porque main.js ya maneja todo -->
+</body>
+</html>
