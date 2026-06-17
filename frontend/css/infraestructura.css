@@ -1,0 +1,157 @@
+/**
+ * SIGAE - ESTILOS DE INFRAESTRUCTURA
+ * Archivo: frontend/css/infraestructura.css
+ * 
+ * Estilos específicos para la página de infraestructura:
+ * - Tarjetas de edificios
+ * - Tarjetas de aulas
+ * - Filtros
+ */
+
+/* =====================================================
+   TARJETAS DE EDIFICIOS
+   ===================================================== */
+.edificio-card {
+    background: white;
+    padding: 20px;
+    border-radius: 10px;
+    cursor: pointer;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.edificio-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+}
+
+.edificio-card h3 {
+    color: #333;
+    margin-bottom: 5px;
+}
+
+.edificio-card .tipo {
+    color: #666;
+    font-size: 0.9rem;
+}
+
+.edificio-card .click-hint {
+    color: #667eea;
+    font-size: 0.8rem;
+    margin-top: 10px;
+}
+
+/* =====================================================
+   TARJETAS DE AULAS
+   ===================================================== */
+.aula-card {
+    background: white;
+    padding: 15px;
+    border-radius: 10px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    transition: transform 0.3s;
+}
+
+.aula-card:hover {
+    transform: scale(1.02);
+}
+
+.aula-card .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.aula-card .header h4 {
+    color: #333;
+}
+
+.aula-card .porcentaje {
+    font-weight: bold;
+}
+
+.aula-card .porcentaje.alta {
+    color: #e74c3c;
+}
+
+.aula-card .porcentaje.media {
+    color: #f39c12;
+}
+
+.aula-card .porcentaje.baja {
+    color: #2ecc71;
+}
+
+.aula-card .detalles {
+    color: #666;
+    font-size: 0.9rem;
+    margin: 5px 0;
+}
+
+.aula-card .tipo-aula {
+    color: #999;
+    font-size: 0.8rem;
+}
+
+/* =====================================================
+   GRIDS
+   ===================================================== */
+.grid-edificios {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 15px;
+    margin-top: 15px;
+}
+
+.grid-aulas {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 15px;
+    margin-top: 15px;
+}
+
+/* =====================================================
+   BOTONES
+   ===================================================== */
+.btn-ver-horario {
+    background: #667eea;
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-top: 10px;
+    transition: background 0.2s;
+}
+
+.btn-ver-horario:hover {
+    background: #5a67d8;
+}
+
+.btn-volver {
+    background: #95a5a6;
+    color: white;
+    border: none;
+    padding: 8px 15px;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-bottom: 15px;
+    transition: background 0.2s;
+}
+
+.btn-volver:hover {
+    background: #7f8c8d;
+}
+
+/* =====================================================
+   RESPONSIVE
+   ===================================================== */
+@media (max-width: 768px) {
+    .grid-edificios {
+        grid-template-columns: 1fr;
+    }
+    
+    .grid-aulas {
+        grid-template-columns: 1fr;
+    }
+}

@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Infraestructura - SIGAE</title>
+    
+    <!-- CSS Global -->
+    <link rel="stylesheet" href="/css/main.css">
+    
+    <!-- CSS específico de infraestructura -->
+    <link rel="stylesheet" href="/css/infraestructura.css">
+</head>
+<body>
+    <div class="dashboard-wrapper">
+        <!-- ============================================= -->
+        <!-- TOP BAR                                       -->
+        <!-- ============================================= -->
+        <div class="top-bar">
+            <div class="top-bar-left">
+                <div class="titulo">UTVT · SISTEMA DE GESTIÓN</div>
+                <div class="subtitulo">SIGAE</div>
+            </div>
+            <div class="top-bar-right">
+                <div class="notifications">
+                    🔔
+                    <span class="notifications-badge" id="notif-count">0</span>
+                </div>
+                <div class="user-info">
+                    <div class="user-avatar" id="user-avatar">A</div>
+                    <div class="user-name" id="user-name">Cargando...</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ============================================= -->
+        <!-- SIDEBAR + CONTENIDO                           -->
+        <!-- ============================================= -->
+        <div class="dashboard-body">
+            <!-- Sidebar -->
+            <div class="sidebar">
+                <div class="sidebar-header">
+                    <h2>SIGAE</h2>
+                    <p>Gestión de Aulas</p>
+                </div>
+                <ul class="sidebar-menu">
+                    <li><a href="/dashboard">📊 Dashboard</a></li>
+                    <li class="active"><a href="/infraestructura">🏢 Infraestructura</a></li>
+                    <li><a href="/solicitudes">📝 Solicitudes</a></li>
+                    <li><a href="/reportes">📈 Reportes</a></li>
+                    <li><a href="#" onclick="logout()">🚪 Cerrar Sesión</a></li>
+                </ul>
+            </div>
+
+            <!-- Contenido -->
+            <div class="main-content">
+                <div class="content">
+                    <h2>🏢 Edificios</h2>
+                    <div id="edificios-container">
+                        <p>Cargando edificios...</p>
+                    </div>
+                    
+                    <div id="aulas-container" style="margin-top: 30px;">
+                        <!-- Las aulas se muestran aquí al seleccionar un edificio -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================================= -->
+    <!-- JAVASCRIPT                                    -->
+    <!-- ============================================= -->
+    <script src="/js/main.js"></script>
+    <script src="/js/infraestructura.js"></script>
+</body>
+</html>

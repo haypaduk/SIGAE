@@ -4,65 +4,125 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard - SIGAE</title>
+    
+    <!-- CSS Global -->
     <link rel="stylesheet" href="/css/main.css">
+    
+    <!-- CSS específico del dashboard -->
+    <link rel="stylesheet" href="/css/dashboard.css">
+    <!-- Font Awesome CDN -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 </head>
 <body>
-    <div class="dashboard-container">
-        <!-- Sidebar -->
-        <div class="sidebar">
-            <div class="sidebar-header">
-                <h2>SIGAE</h2>
-                <p>Gestión de Aulas</p>
-            </div>
-            <ul class="sidebar-menu">
-                <li class="active"><a href="#" onclick="loadPage('/dashboard')">📊 Dashboard</a></li>
-                <li><a href="#" onclick="loadPage('/infraestructura')">🏢 Infraestructura</a></li>
-                <li><a href="#" onclick="loadPage('/solicitudes')">📝 Solicitudes</a></li>
-                <li><a href="#" onclick="loadPage('/reportes')">📈 Reportes</a></li>
-                <li><button onclick="logout()" style="background:none;border:none;color:white;cursor:pointer;width:100%;text-align:left;padding:12px 25px;font-size:1rem;">🚪 Cerrar Sesión</button></li>            
-            </ul>
-        </div>
+    <div class="dashboard-wrapper">
         
-        <!-- Main Content -->
-        <div class="main-content">
-            <div class="top-bar">
-                <div class="top-bar-title">Dashboard General</div>
-                <div class="top-bar-user">
-                    <div class="notifications" id="notifications">
-                        🔔
-                        <span class="notifications-badge" id="notif-count">0</span>
-                    </div>
-                    <div class="user-avatar" id="user-avatar">A</div>
-                    <span id="user-name">Cargando...</span>
+        <!-- ============================================= -->
+        <!-- TOP BAR (con logos)                           -->
+        <!-- ============================================= -->
+        <div class="top-bar">
+            <div class="top-bar-left">
+                <!-- Logos -->
+                <div class="top-bar-logos">
+                    <img src="/frontend/img/rectoria_cortada.jpg" alt="Logo UTVT" class="logo">
+                    <span class="separator"></span>
+                    <img src="/frontend/img/utvt_logo.jpg" alt="Logo SIGAE" class="logo">
+                </div>
+                
+                <!-- Texto -->
+                <div class="top-bar-text">
+                    <div class="titulo">UTVT · SISTEMA DE GESTIÓN</div>
+                    <div class="subtitulo">SIGAE</div>
                 </div>
             </div>
             
-            <div class="content">
-                <!-- Tarjetas de estadísticas -->
-                <div class="stats-grid" id="stats-grid">
-                    <div class="stat-card">Cargando estadísticas...</div>
+            <div class="top-bar-right">
+                <div class="notifications" id="notifications">
+                    🔔
+                    <span class="notifications-badge" id="notif-count">0</span>
                 </div>
-                
-                <!-- Listas de aulas -->
-                <div class="lists-container">
-                    <div class="list-card">
-                        <h3>🔥 Alta Demanda</h3>
-                        <div id="alta-demanda-list">
-                            <p>Cargando...</p>
-                        </div>
-                    </div>
-                    
-                    <div class="list-card">
-                        <h3>⚠️ Espacios Subutilizados</h3>
-                        <div id="subutilizadas-list">
-                            <p>Cargando...</p>
-                        </div>
-                    </div>
+                <div class="user-info">
+                    <div class="user-avatar" id="user-avatar">A</div>
+                    <div class="user-name" id="user-name">Cargando...</div>
                 </div>
             </div>
         </div>
-    </div>
+        <!-- ===== FIN TOP BAR ===== -->
+
+        <!-- ============================================= -->
+        <!-- SIDEBAR + CONTENIDO                           -->
+        <!-- ============================================= -->
+        <div class="dashboard-body">
+            
+            <!-- Sidebar -->
+            <div class="sidebar">
+                <div class="sidebar-header">
+                    <h2>SIGAE</h2>
+                    <p>Gestión de Aulas</p>
+                </div>
+                <ul class="sidebar-menu">
+                    <li class="active"><a href="/dashboard">📊 Dashboard</a></li>
+                    <li><a href="/infraestructura">🏢 Infraestructura</a></li>
+                    <li><a href="/solicitudes">📝 Solicitudes</a></li>
+                    <li><a href="/reportes">📈 Reportes</a></li>
+                    <li><a href="#" onclick="logout()">🚪 Cerrar Sesión</a></li>
+                </ul>
+            </div>
+
+            <!-- Contenido -->
+            <div class="main-content">
+                <div class="content">
+                    
+                    <!-- Tarjetas de estadísticas -->
+                    <div class="stats-grid" id="stats-grid">
+                        <div class="stat-card">Cargando estadísticas...</div>
+                    </div>
+
+                    <!-- Ocupación por edificio (barras) -->
+                    <div class="ocupacion-container">
+                        <div class="ocupacion-card">
+                            <h3>📊 Ocupación por Edificio</h3>
+                            <div id="ocupacion-edificios">
+                                <p>Cargando...</p>
+                            </div>
+                        </div>
+                        <div class="ocupacion-card">
+                            <h3>📈 Resumen Global</h3>
+                            <div id="resumen-global">
+                                <p>Cargando...</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Listas de aulas -->
+                    <div class="lists-container">
+                        <div class="list-card">
+                            <h3>🔥 Alta Demanda</h3>
+                            <div id="alta-demanda-list">
+                                <p>Cargando...</p>
+                            </div>
+                        </div>
+                        <div class="list-card">
+                            <h3>⚠️ Espacios Subutilizados</h3>
+                            <div id="subutilizadas-list">
+                                <p>Cargando...</p>
+                            </div>
+                        </div>
+                    </div>
+
+                </div> <!-- .content -->
+            </div> <!-- .main-content -->
+
+        </div> <!-- .dashboard-body -->
+
+    </div> <!-- .dashboard-wrapper -->
+
+    <!-- ============================================= -->
+    <!-- JAVASCRIPT                                    -->
+    <!-- ============================================= -->
+    <!-- Funciones globales (logout, mostrarUsuario) -->
+    <script src="/js/main.js"></script>
     
-    <!-- No necesita script adicional porque main.js ya maneja todo -->
+    <!-- Lógica específica del dashboard -->
+    <script src="/js/dashboard.js"></script>
 </body>
 </html>

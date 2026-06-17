@@ -1,216 +1,211 @@
 /**
- * =====================================================
- * SIGAE - ESTILOS PRINCIPALES
+ * SIGAE - ESTILOS GLOBALES
  * Archivo: frontend/css/main.css
- * =====================================================
  * 
- * Este archivo contiene TODOS los estilos del sistema:
- * - Layout general (dashboard, sidebar, top-bar)
- * - Pantalla de login/registro
- * - Tarjetas de estadísticas (dashboard)
- * - Listas de aulas (alta demanda/subutilizadas)
- * - Responsive (funciona en celular)
- * 
- * =====================================================
+ * Estilos que se usan en TODAS las páginas:
+ * - Layout principal (top bar, sidebar, contenido)
+ * - Componentes reutilizables (tarjetas, botones, etc.)
+ * - Sistema de colores y tipografía
+ * - Responsive
  */
 
 /* =====================================================
- * RESET Y BASE
- * Elimina márgenes/paddings por defecto y define box-sizing
- * ===================================================== */
+   RESET Y BASE
+   ===================================================== */
 * {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
 }
 
-/* Estilo base del cuerpo de la página */
-body {
+html, body {
+    height: 100%;
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     background: #f5f7fa;
 }
 
 /* =====================================================
- * PANTALLA DE LOGIN Y REGISTRO
- * Fondo degradado y tarjeta centrada
- * ===================================================== */
-
-/* Fondo con degradado para las páginas de autenticación */
-body.login-body {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    min-height: 100vh;
+   LAYOUT PRINCIPAL
+   ===================================================== */
+.dashboard-wrapper {
     display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-/* Contenedor que centra la tarjeta de login */
-.login-container {
-    width: 100%;
-    max-width: 400px;
-    padding: 20px;
-}
-
-/* Tarjeta blanca del formulario */
-.login-card {
-    background: white;
-    border-radius: 10px;
-    padding: 40px;
-    box-shadow: 0 10px 40px rgba(0,0,0,0.1);
-}
-
-/* Encabezado con título y subtítulo */
-.login-header {
-    text-align: center;
-    margin-bottom: 30px;
-}
-
-.login-header h1 {
-    color: #667eea;
-    font-size: 2rem;
-    margin-bottom: 10px;
-}
-
-.login-header p {
-    color: #666;
-    font-size: 0.9rem;
-}
-
-.subtitle {
-    font-size: 0.8rem;
-    color: #999;
+    flex-direction: column;
+    height: 100vh;
 }
 
 /* =====================================================
- * FORMULARIOS (compartidos entre login, register, modales)
- * ===================================================== */
-
-/* Grupo de campos del formulario */
-.form-group {
-    margin-bottom: 20px;
-}
-
-.form-group label {
-    display: block;
-    margin-bottom: 5px;
-    color: #333;
-    font-weight: 500;
-}
-
-/* Inputs y selects */
-.form-group input,
-.form-group select {
+   TOP BAR - IMAGEN + DEGRADADO VINO
+   ===================================================== */
+.top-bar {
+    /* ===== IMAGEN DE FONDO CON DEGRADADO VINO ===== */
+    background-image: 
+        linear-gradient(135deg, rgba(139, 28, 42, 0.5), rgba(107, 21, 32, 0.6)),
+        url('/img/rectoria.jpg');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    
+    padding: 10px 30px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+    flex-shrink: 0;
+    z-index: 100;
+    position: sticky;
+    top: 0;
     width: 100%;
-    padding: 10px;
-    border: 1px solid #ddd;
-    border-radius: 5px;
-    font-size: 1rem;
+    box-sizing: border-box;
+    min-height: 60px;
 }
 
-/* Checkbox (Mantener sesión iniciada) */
-.form-group.checkbox {
+/* =====================================================
+   LOGOS EN TOP BAR
+   ===================================================== */
+.top-bar-left {
     display: flex;
     align-items: center;
-}
-
-.form-group.checkbox label {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    cursor: pointer;
-    margin: 0;
-}
-
-/* Botón principal de login/registro */
-.btn-login {
-    width: 100%;
-    padding: 12px;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
-    border: none;
-    border-radius: 5px;
-    font-size: 1rem;
-    cursor: pointer;
-    transition: transform 0.2s;
-}
-
-.btn-login:hover {
-    transform: translateY(-2px);
-}
-
-/* Enlaces del footer (Registrarse, Olvidé contraseña) */
-.login-footer {
-    margin-top: 20px;
-    text-align: center;
-    display: flex;
-    flex-direction: column;
     gap: 10px;
 }
 
-.login-footer a {
-    color: #667eea;
-    text-decoration: none;
-    font-size: 0.9rem;
-    cursor: pointer;
-}
-
-.login-footer a:hover {
-    text-decoration: underline;
-}
-
-/* =====================================================
- * ALERTAS Y MENSAJES (toast/notificaciones)
- * ===================================================== */
-
-.alert {
-    padding: 10px;
-    border-radius: 5px;
-    margin-bottom: 20px;
-}
-
-.alert-success {
-    background: #d4edda;
-    color: #155724;
-    border: 1px solid #c3e6cb;
-}
-
-.alert-error {
-    background: #f8d7da;
-    color: #721c24;
-    border: 1px solid #f5c6cb;
-}
-
-/* Pantalla de carga mientras se carga el contenido */
-.loading {
-    text-align: center;
-    padding: 50px;
-    font-size: 1.2rem;
-    color: #667eea;
-}
-
-/* =====================================================
- * LAYOUT DEL DASHBOARD (Sidebar + Contenido principal)
- * ===================================================== */
-
-/* Contenedor flexible para sidebar y contenido */
-.dashboard-container {
+.top-bar-logos {
     display: flex;
-    min-height: 100vh;
+    align-items: center;
+    gap: 8px;
+}
+
+.top-bar-logos .logo {
+    width: 39px;
+    height: 39px;
+    object-fit: cover;
+    display: block;
+    flex-shrink: 0;
+    border-radius: 8px;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.top-bar-logos .logo:hover {
+    transform: scale(1.05);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+}
+
+.top-bar-logos .separator {
+    width: 2px;
+    height: 39px;
+    background: rgba(255, 255, 255, 0.3);
+    display: block;
+    flex-shrink: 0;
+}
+
+.top-bar-text {
+    display: flex;
+    flex-direction: column;
+    margin-left: 10px;
+}
+
+.top-bar-text .titulo {
+    font-size: 1rem;
+    font-weight: bold;
+    color: white;
+    letter-spacing: 0.5px;
+}
+
+.top-bar-text .subtitulo {
+    font-size: 0.7rem;
+    color: rgba(255, 255, 255, 0.7);
+    letter-spacing: 1px;
 }
 
 /* =====================================================
- * SIDEBAR (Menú lateral)
- * ===================================================== */
+   NOTIFICACIONES (campanita)
+   ===================================================== */
+.notifications {
+    position: relative;
+    cursor: pointer;
+    font-size: 1.4rem;
+    color: white;
+}
+
+.notifications-badge {
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    background: #e74c3c;
+    color: white;
+    border-radius: 50%;
+    padding: 2px 6px;
+    font-size: 0.6rem;
+    font-weight: bold;
+    min-width: 18px;
+    text-align: center;
+    display: none;
+}
+
+.notifications-badge.show {
+    display: inline-block;
+}
+
+/* =====================================================
+   USUARIO EN TOP BAR (lado derecho)
+   ===================================================== */
+.top-bar-right {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.user-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.user-avatar {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #6B1520 0%, #5A0F18 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: bold;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    border: 2px solid rgba(255,255,255,0.3);
+}
+
+.user-name {
+    font-weight: 500;
+    color: white;
+    font-size: 0.9rem;
+}
+
+.user-name .carreras {
+    color: #FFD700;
+    font-weight: 600;
+}
+
+/* =====================================================
+   SIDEBAR
+   ===================================================== */
+.dashboard-body {
+    display: flex;
+    flex: 1;
+    overflow: hidden;
+}
+
 .sidebar {
-    width: 260px;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    width: 240px;
+    background: linear-gradient(180deg, #8B1C2A 0%, #6B1520 100%);
     color: white;
     padding: 20px 0;
+    flex-shrink: 0;
+    overflow-y: auto;
 }
 
-/* Logo / Título en la parte superior del sidebar */
 .sidebar-header {
-    padding: 20px;
+    padding: 0 20px 20px 20px;
     text-align: center;
     border-bottom: 1px solid rgba(255,255,255,0.1);
     margin-bottom: 20px;
@@ -218,18 +213,19 @@ body.login-body {
 
 .sidebar-header h2 {
     font-size: 1.5rem;
-    margin-bottom: 5px;
+    margin: 0 0 5px 0;
 }
 
 .sidebar-header p {
     font-size: 0.8rem;
     opacity: 0.8;
+    margin: 0;
 }
 
-/* Lista de módulos del sistema */
 .sidebar-menu {
     list-style: none;
     padding: 0;
+    margin: 0;
 }
 
 .sidebar-menu li {
@@ -242,7 +238,6 @@ body.login-body {
     background: rgba(255,255,255,0.1);
 }
 
-/* Elemento activo (página actual) */
 .sidebar-menu li.active {
     background: rgba(255,255,255,0.2);
     border-left: 4px solid white;
@@ -255,88 +250,25 @@ body.login-body {
 }
 
 /* =====================================================
- * CONTENIDO PRINCIPAL (Área donde se muestra cada módulo)
- * ===================================================== */
+   CONTENIDO PRINCIPAL
+   ===================================================== */
 .main-content {
     flex: 1;
     background: #f5f7fa;
+    overflow-y: auto;
+    padding: 20px 30px;
 }
 
 /* =====================================================
- * BARRA SUPERIOR (Top bar con usuario y notificaciones)
- * ===================================================== */
-.top-bar {
-    background: white;
-    padding: 15px 30px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-}
-
-/* Título de la página actual */
-.top-bar-title {
-    font-size: 1.2rem;
-    color: #333;
-}
-
-/* Área del usuario (notificaciones + avatar + nombre) */
-.top-bar-user {
-    display: flex;
-    align-items: center;
-    gap: 15px;
-}
-
-/* Ícono de campana para notificaciones */
-.notifications {
-    position: relative;
-    cursor: pointer;
-}
-
-/* Badge con número de notificaciones pendientes */
-.notifications-badge {
-    position: absolute;
-    top: -8px;
-    right: -8px;
-    background: red;
-    color: white;
-    border-radius: 50%;
-    padding: 2px 6px;
-    font-size: 0.7rem;
-    display: none;
-}
-
-/* Avatar circular del usuario (iniciales) */
-.user-avatar {
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    background: #667eea;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: white;
-    font-weight: bold;
-}
-
-/* Contenedor del contenido dinámico de cada módulo */
-.content {
-    padding: 30px;
-}
-
-/* =====================================================
- * TARJETAS DE ESTADÍSTICAS (Dashboard)
- * ===================================================== */
-
-/* Grid de 5 tarjetas (Total, Disponibles, Parcial, Ocupados, Global) */
+   TARJETAS DE ESTADÍSTICAS
+   ===================================================== */
 .stats-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
     gap: 20px;
     margin-bottom: 30px;
 }
 
-/* Cada tarjeta individual */
 .stat-card {
     background: white;
     border-radius: 10px;
@@ -346,118 +278,64 @@ body.login-body {
 
 .stat-card h3 {
     color: #666;
-    font-size: 0.9rem;
+    font-size: 0.85rem;
     margin-bottom: 10px;
 }
 
-/* Número grande dentro de la tarjeta */
 .stat-number {
     font-size: 2rem;
     font-weight: bold;
-    color: #667eea;
+    color: #8B1C2A;
 }
 
-/* Porcentaje o texto secundario */
 .stat-percent {
-    font-size: 0.9rem;
+    font-size: 0.8rem;
     color: #999;
     margin-top: 5px;
 }
 
-/* Tarjeta especial de ocupación global (con degradado) */
-.global-occupancy {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+.stat-card.global-occupancy {
+    background: linear-gradient(135deg, #8B1C2A 0%, #6B1520 100%);
     color: white;
 }
 
-.global-occupancy .stat-number {
+.stat-card.global-occupancy .stat-number {
     color: white;
 }
 
-/* =====================================================
- * LISTAS DE AULAS (Alta demanda / Subutilizadas)
- * ===================================================== */
-
-/* Contenedor de las dos listas (lado a lado) */
-.lists-container {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 30px;
-    margin-top: 30px;
-}
-
-/* Tarjeta que contiene cada lista */
-.list-card {
-    background: white;
-    border-radius: 10px;
-    padding: 20px;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-}
-
-.list-card h3 {
-    margin-bottom: 20px;
-    color: #333;
-}
-
-/* Cada fila de aula en la lista */
-.aula-item {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 10px 0;
-    border-bottom: 1px solid #eee;
-}
-
-.aula-info {
-    flex: 1;
-}
-
-.aula-nombre {
-    font-weight: bold;
-    color: #333;
-}
-
-.aula-edificio {
-    font-size: 0.8rem;
-    color: #999;
-}
-
-.aula-porcentaje {
-    font-weight: bold;
-    color: #667eea;
-}
-
-/* Color rojo para alta demanda (más del 80%) */
-.high-demand {
-    color: #e74c3c;
-}
-
-/* Color naranja para subutilizadas (menos del 30%) */
-.underutilized {
-    color: #f39c12;
+.stat-card.global-occupancy .stat-percent {
+    color: rgba(255,255,255,0.8);
 }
 
 /* =====================================================
- * RESPONSIVE (CELULAR Y TABLET)
- * ===================================================== */
+   RESPONSIVE (celular)
+   ===================================================== */
 @media (max-width: 768px) {
-    /* Cambia a columna en lugar de fila */
-    .dashboard-container {
+    .top-bar {
         flex-direction: column;
+        gap: 10px;
+        padding: 10px 15px;
     }
     
-    /* Sidebar ocupa todo el ancho en móvil */
+    .top-bar-left {
+        width: 100%;
+        justify-content: flex-start;
+    }
+    
+    .top-bar-right {
+        width: 100%;
+        justify-content: flex-end;
+    }
+    
     .sidebar {
         width: 100%;
     }
     
-    /* Las tarjetas se apilan verticalmente */
-    .stats-grid {
-        grid-template-columns: 1fr;
+    .dashboard-body {
+        flex-direction: column;
     }
     
-    /* Las dos listas se apilan */
-    .lists-container {
+    .stats-grid {
         grid-template-columns: 1fr;
     }
 }
