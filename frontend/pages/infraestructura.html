@@ -10,20 +10,36 @@
     
     <!-- CSS específico de infraestructura -->
     <link rel="stylesheet" href="/css/infraestructura.css">
+    
+    <!-- Font Awesome CDN -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
 </head>
 <body>
     <div class="dashboard-wrapper">
+        
         <!-- ============================================= -->
-        <!-- TOP BAR                                       -->
+        <!-- TOP BAR (con logos)                           -->
         <!-- ============================================= -->
         <div class="top-bar">
             <div class="top-bar-left">
-                <div class="titulo">UTVT · SISTEMA DE GESTIÓN</div>
-                <div class="subtitulo">SIGAE</div>
+                <!-- Logos -->
+                <div class="top-bar-logos">
+                    <img src="/frontend/img/rectoria_cortada.jpg" alt="Logo UTVT" class="logo">
+                    <span class="separator"></span>
+                    <img src="/frontend/img/utvt_logo.jpg" alt="Logo SIGAE" class="logo">
+                </div>
+                
+                <!-- Texto -->
+                <div class="top-bar-text">
+                    <div class="titulo">UTVT · SISTEMA DE GESTIÓN</div>
+                    <div class="subtitulo">SIGAE</div>
+                </div>
             </div>
+            
             <div class="top-bar-right">
-                <div class="notifications">
-                    🔔
+                <div class="notifications" id="notifications">
+                    <i class="fas fa-bell"></i>
                     <span class="notifications-badge" id="notif-count">0</span>
                 </div>
                 <div class="user-info">
@@ -32,6 +48,7 @@
                 </div>
             </div>
         </div>
+        <!-- ===== FIN TOP BAR ===== -->
 
         <!-- ============================================= -->
         <!-- SIDEBAR + CONTENIDO                           -->
@@ -44,11 +61,11 @@
                     <p>Gestión de Aulas</p>
                 </div>
                 <ul class="sidebar-menu">
-                    <li><a href="/dashboard">📊 Dashboard</a></li>
-                    <li class="active"><a href="/infraestructura">🏢 Infraestructura</a></li>
-                    <li><a href="/solicitudes">📝 Solicitudes</a></li>
-                    <li><a href="/reportes">📈 Reportes</a></li>
-                    <li><a href="#" onclick="logout()">🚪 Cerrar Sesión</a></li>
+                    <li><a href="/dashboard"><i class="fas fa-chart-pie"></i> Dashboard</a></li>
+                    <li><a href="/infraestructura"><i class="fas fa-building"></i> Infraestructura</a></li>
+                    <li><a href="/solicitudes"><i class="fas fa-file-alt"></i> Solicitudes</a></li>
+                    <li><a href="/reportes"><i class="fas fa-chart-bar"></i> Reportes</a></li>
+                    <li><a href="#" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Cerrar Sesión</a></li>
                 </ul>
             </div>
 

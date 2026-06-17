@@ -17,32 +17,59 @@ function logout() {
 }
 
 // =====================================================
-// MOSTRAR USUARIO EN TOP BAR
+// MOSTRAR USUARIO EN TOP BAR (con carreras para director)
 // =====================================================
-function mostrarUsuario() {
-    const userStr = localStorage.getItem('user');
-    if (!userStr) return;
+function mostrarUsuario(nombre = null, avatar = null) {
+    const avatarEl = document.getElementById('user-avatar');
+    const nameEl = document.getElementById('user-name');
     
-    try {
-        const user = JSON.parse(userStr);
-        let nombreCompleto = user.nombre || 'Usuario';
-        let carrerasTexto = '';
-        
-        // Si es director, mostrar sus carreras entre paréntesis
-        if (user.rol === 'director' && user.carreras && user.carreras.length > 0) {
-            const claves = user.carreras.map(c => c.clave_carrera).join('/');
-            carrerasTexto = `<span class="carreras">(${claves})</span>`;
+    // Si no hay elementos en el DOM, salir
+    if (!avatarEl || !nameEl) return;
+    
+    // Si se pasan parámetros, usarlos; si no, usar localStorage
+    let nombreFinal = nombre;
+    let avatarFinal = avatar;
+    let carrerasTexto = '';
+    
+    if (!nombreFinal) {
+        const userStr = localStorage.getItem('user');
+        if (!userStr) {
+            avatarEl.textContent = 'U';
+            nameEl.textContent = 'Usuario';
+            return;
         }
         
-        // Actualizar avatar con la inicial del nombre
-        const inicial = nombreCompleto.charAt(0).toUpperCase();
-        document.getElementById('user-avatar').textContent = inicial;
-        
-        // Actualizar nombre con las carreras (si aplica)
-        document.getElementById('user-name').innerHTML = `${nombreCompleto} ${carrerasTexto}`;
-        
-    } catch (error) {
-        console.error('Error mostrando usuario:', error);
+        try {
+            const user = JSON.parse(userStr);
+            nombreFinal = user.nombre || 'Usuario';
+            
+            // ===== IMPORTANTE: CARRERAS PARA DIRECTOR =====
+            if (user.rol === 'director' && user.carreras && user.carreras.length > 0) {
+                const claves = user.carreras.map(c => c.clave_carrera).join('/');
+                carrerasTexto = `<span class="carreras">(${claves})</span>`;
+            }
+            
+            avatarFinal = user.nombre ? user.nombre.charAt(0).toUpperCase() : 'U';
+        } catch (error) {
+            console.error('Error mostrando usuario:', error);
+            nombreFinal = 'Usuario';
+            avatarFinal = 'U';
+        }
+    }
+    
+    // Si no viene avatar, generarlo
+    if (!avatarFinal) {
+        avatarFinal = nombreFinal.charAt(0).toUpperCase();
+    }
+    
+    // Asignar al DOM
+    avatarEl.textContent = avatarFinal;
+    
+    // Si hay carreras, mostrarlas como HTML; si no, solo el nombre
+    if (carrerasTexto) {
+        nameEl.innerHTML = `${nombreFinal} ${carrerasTexto}`;
+    } else {
+        nameEl.textContent = nombreFinal;
     }
 }
 
@@ -50,17 +77,13 @@ function mostrarUsuario() {
 // NOTIFICACIONES (placeholder)
 // =====================================================
 function mostrarNotificacion(mensaje) {
-    // Por ahora solo muestra un alert
-    // Después se conectará con WebSockets
     console.log('🔔 Notificación:', mensaje);
-    // alert('🔔 ' + mensaje);
 }
 
 // =====================================================
 // INICIALIZACIÓN AUTOMÁTICA
 // =====================================================
 document.addEventListener('DOMContentLoaded', function() {
-    // Si hay usuario en localStorage, mostrarlo
     if (localStorage.getItem('user')) {
         mostrarUsuario();
     }
