@@ -86,9 +86,11 @@ def api_login():
     if not re.match(r'^[a-zA-Z0-9._%+-]+@utvtol\.edu\.mx$', email):
         return jsonify({'error': 'Solo correos @utvtol.edu.mx'}), 400
     
-    # Buscar usuario
+    # Buscar usuario (INCLUYE foto_perfil)
     user = execute_query(
-        "SELECT id_usuario, email, nombre_completo, rol, id_carrera FROM usuarios WHERE email = %s AND password = %s AND activo = 1",
+        """SELECT id_usuario, email, nombre_completo, rol, id_carrera, foto_perfil 
+           FROM usuarios 
+           WHERE email = %s AND password = %s AND activo = 1""",
         (email, password),
         fetch_one=True
     )
@@ -108,12 +110,14 @@ def api_login():
             fetch_all=True
         )
     
+    # Datos del usuario (INCLUYE foto_perfil)
     user_data = {
         'id': user['id_usuario'],
         'nombre': user['nombre_completo'],
         'email': user['email'],
         'rol': user['rol'],
-        'carreras': carreras
+        'carreras': carreras,
+        'foto_perfil': user.get('foto_perfil', '/img/avatar.png')
     }
     
     return jsonify({'user': user_data}), 200

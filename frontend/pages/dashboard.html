@@ -5,55 +5,39 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard - SIGAE</title>
     
-    <!-- CSS Global -->
     <link rel="stylesheet" href="/css/main.css">
-    
-    <!-- CSS específico del dashboard -->
     <link rel="stylesheet" href="/css/dashboard.css">
-    <!-- Font Awesome CDN -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 </head>
 <body>
     <div class="dashboard-wrapper">
-        
-        <!-- ============================================= -->
-        <!-- TOP BAR (con logos)                           -->
-        <!-- ============================================= -->
+        <!-- Top Bar -->
         <div class="top-bar">
             <div class="top-bar-left">
-                <!-- Logos -->
                 <div class="top-bar-logos">
                     <img src="/frontend/img/rectoria_cortada.jpg" alt="Logo UTVT" class="logo">
                     <span class="separator"></span>
                     <img src="/frontend/img/utvt_logo.jpg" alt="Logo SIGAE" class="logo">
                 </div>
-                
-                <!-- Texto -->
                 <div class="top-bar-text">
                     <div class="titulo">UTVT · SISTEMA DE GESTIÓN</div>
                     <div class="subtitulo">SIGAE</div>
                 </div>
             </div>
-            
             <div class="top-bar-right">
                 <div class="notifications" id="notifications">
                     <i class="fas fa-bell"></i>
                     <span class="notifications-badge" id="notif-count">0</span>
                 </div>
                 <div class="user-info">
-                    <div class="user-avatar" id="user-avatar">A</div>
+                    <div class="user-avatar" id="user-avatar"></div>
                     <div class="user-name" id="user-name">Cargando...</div>
                 </div>
             </div>
         </div>
-        <!-- ===== FIN TOP BAR ===== -->
 
-        <!-- ============================================= -->
-        <!-- SIDEBAR + CONTENIDO                           -->
-        <!-- ============================================= -->
+        <!-- Sidebar + Contenido -->
         <div class="dashboard-body">
-            
-            <!-- Sidebar -->
             <div class="sidebar">
                 <div class="sidebar-header">
                     <h2><i class="fas fa-cubes"></i> SIGAE</h2>
@@ -68,69 +52,70 @@
                 </ul>
             </div>
 
-            <!-- Contenido -->
             <div class="main-content">
                 <div class="content">
-                    
-                    <!-- ============================================= -->
-                    <!-- TARJETAS DE ESTADÍSTICAS (se genera con JS)   -->
-                    <!-- ============================================= -->
+                    <!-- Tarjetas de estadísticas -->
                     <div class="stats-grid" id="stats-grid">
                         <div class="stat-card">Cargando estadísticas...</div>
                     </div>
-
-                    <!-- ============================================= -->
-                    <!-- OCUPACIÓN POR EDIFICIO (barras)               -->
-                    <!-- ============================================= -->
+                    
+                    <!-- Ocupación por Edificio + Ocupación Global -->
                     <div class="ocupacion-container">
                         <div class="ocupacion-card">
                             <h3><i class="fas fa-building"></i> Ocupación por Edificio</h3>
-                            <div id="ocupacion-edificios">
-                                <p>Cargando...</p>
+                            <div id="ocupacion-edificios"><p>Cargando...</p></div>
+                        </div>
+                        
+                        <!-- Ocupación Global (Círculo) -->
+                        <div class="ocupacion-card" style="background: linear-gradient(135deg, #8B1C2A 0%, #6B1520 100%); color: white; padding: 20px; border-radius: 10px;">
+                            <h3 style="color: rgba(255,255,255,0.9);"><i class="fas fa-chart-pie" style="color: rgba(255,255,255,0.8);"></i> Ocupación Global</h3>
+                            <div class="global-occupancy-content">
+                                <div class="circle-container">
+                                    <div class="circle-progress" style="background: conic-gradient(#27ae60 0% 48%, rgba(255,255,255,0.15) 48% 100%);">
+                                        <span class="circle-percentage" id="global-percentage">48%</span>
+                                    </div>
+                                </div>
+                                <div class="status-indicators">
+                                    <div class="status-item">
+                                        <span class="status-dot green"></span>
+                                        <span class="status-label">Disponibles</span>
+                                        <span class="status-number green-text" id="disponibles-count">19</span>
+                                    </div>
+                                    <div class="status-item">
+                                        <span class="status-dot orange"></span>
+                                        <span class="status-label">Uso parcial</span>
+                                        <span class="status-number orange-text" id="parcial-count">16</span>
+                                    </div>
+                                    <div class="status-item">
+                                        <span class="status-dot red"></span>
+                                        <span class="status-label">Alta demanda</span>
+                                        <span class="status-number red-text" id="ocupados-count">17</span>
+                                    </div>
+                                </div>
                             </div>
                         </div>
-                        <!-- 
-                            =============================================
-                            NOTA: La tarjeta de "Ocupación Global" 
-                            se genera DENTRO de #stats-grid desde 
-                            JavaScript (dashboard.js).
-                            NO la pongas aquí para evitar duplicidad.
-                            =============================================
-                        -->
                     </div>
 
-                    <!-- ============================================= -->
-                    <!-- LISTAS DE AULAS                               -->
-                    <!-- ============================================= -->
+                    <!-- Listas de aulas -->
                     <div class="lists-container">
                         <div class="list-card">
                             <h3><i class="fas fa-fire"></i> Alta Demanda</h3>
-                            <div id="alta-demanda-list">
-                                <p>Cargando...</p>
-                            </div>
+                            <div id="alta-demanda-list"><p>Cargando...</p></div>
                         </div>
                         <div class="list-card">
                             <h3><i class="fas fa-exclamation-triangle"></i> Espacios Subutilizados</h3>
-                            <div id="subutilizadas-list">
-                                <p>Cargando...</p>
-                            </div>
+                            <div id="subutilizadas-list"><p>Cargando...</p></div>
                         </div>
                     </div>
-
-                </div> <!-- .content -->
-            </div> <!-- .main-content -->
-
-        </div> <!-- .dashboard-body -->
-
-    </div> <!-- .dashboard-wrapper -->
+                </div>
+            </div>
+        </div>
+    </div>
 
     <!-- ============================================= -->
     <!-- JAVASCRIPT                                    -->
     <!-- ============================================= -->
-    <!-- Funciones globales (logout, mostrarUsuario) -->
     <script src="/js/main.js"></script>
-    
-    <!-- Lógica específica del dashboard -->
     <script src="/js/dashboard.js"></script>
 </body>
 </html>

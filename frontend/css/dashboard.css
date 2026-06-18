@@ -5,6 +5,7 @@
  * Estilos específicos para el dashboard:
  * - Listas de alta demanda y subutilizadas
  * - Tarjetas de estadísticas
+ * - Ocupación global (círculo + indicadores)
  */
 
 /* =====================================================
@@ -241,137 +242,7 @@
     position: relative;
 }
 
-/* Círculo interior (blanco con transparencia) */
-.circle-progress::before {
-    content: '';
-    position: absolute;
-    width: 85px;
-    height: 85px;
-    border-radius: 50%;
-    background: rgba(139, 28, 42, 0.9);
-}
-
-.circle-percentage {
-    position: relative;
-    z-index: 1;
-    font-size: 2.2rem;
-    font-weight: bold;
-    color: white;
-    text-shadow: 0 2px 4px rgba(0,0,0,0.2);
-}
-
-/* ===== INDICADORES DE ESTADO ===== */
-.status-indicators {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    min-width: 140px;
-}
-
-.status-item {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    font-size: 0.85rem;
-    color: rgba(255, 255, 255, 0.85);
-}
-
-.status-item span:first-of-type {
-    flex: 1;
-}
-
-.status-number {
-    font-weight: bold;
-    text-align: right;
-}
-
-/* Puntitos de colores */
-.status-dot {
-    width: 10px;
-    height: 10px;
-    border-radius: 50%;
-    flex-shrink: 0;
-}
-
-.status-dot.green {
-    background: #27ae60;
-    box-shadow: 0 0 8px rgba(39, 174, 96, 0.5);
-}
-
-.status-dot.orange {
-    background: #f39c12;
-    box-shadow: 0 0 8px rgba(243, 156, 18, 0.5);
-}
-
-.status-dot.red {
-    background: #e74c3c;
-    box-shadow: 0 0 8px rgba(231, 76, 60, 0.5);
-}
-
-/* ===== RESPONSIVE ===== */
-@media (max-width: 768px) {
-    .global-occupancy-content {
-        flex-direction: column;
-        align-items: center;
-        text-align: center;
-    }
-    
-    .circle-container {
-        width: 100px;
-        height: 100px;
-    }
-    
-    .circle-progress {
-        width: 100px;
-        height: 100px;
-    }
-    
-    .circle-progress::before {
-        width: 70px;
-        height: 70px;
-    }
-    
-    .circle-percentage {
-        font-size: 1.8rem;
-    }
-    
-    .status-item {
-        font-size: 0.8rem;
-    }
-}
-
-/* =====================================================
-   OCUPACIÓN GLOBAL - CÍRCULO E INDICADORES (CORREGIDO)
-   ===================================================== */
-
-/* ===== CONTENEDOR PRINCIPAL ===== */
-.global-occupancy-content {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 20px;
-    flex-wrap: wrap;
-}
-
-/* ===== CÍRCULO ===== */
-.circle-container {
-    flex-shrink: 0;
-    width: 120px;
-    height: 120px;
-}
-
-.circle-progress {
-    width: 120px;
-    height: 120px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    position: relative;
-}
-
-/* Círculo interior (fondo oscuro para que resalte el porcentaje) */
+/* Círculo interior */
 .circle-progress::before {
     content: '';
     position: absolute;
@@ -407,12 +278,10 @@
     color: rgba(255, 255, 255, 0.9);
 }
 
-/* El texto fijo (Disponibles, Uso parcial, Alta demanda) */
 .status-item .status-label {
     flex: 1;
 }
 
-/* El número (19 aulas, 16 aulas, 17 aulas) */
 .status-number {
     font-weight: bold;
     font-size: 0.95rem;
@@ -420,7 +289,7 @@
     min-width: 70px;
 }
 
-/* ===== PUNTITOS DE COLOR (BIEN REDONDOS) ===== */
+/* ===== PUNTITOS DE COLOR ===== */
 .status-dot {
     width: 12px;
     height: 12px;
@@ -457,8 +326,18 @@
     color: #e74c3c;
 }
 
-/* ===== RESPONSIVE ===== */
+/* =====================================================
+   RESPONSIVE
+   ===================================================== */
 @media (max-width: 768px) {
+    .lists-container {
+        grid-template-columns: 1fr;
+    }
+    
+    .ocupacion-container {
+        grid-template-columns: 1fr;
+    }
+
     .global-occupancy-content {
         flex-direction: column;
         align-items: center;
@@ -491,18 +370,5 @@
     
     .status-number {
         min-width: 60px;
-    }
-}
-
-/* =====================================================
-   RESPONSIVE
-   ===================================================== */
-@media (max-width: 768px) {
-    .lists-container {
-        grid-template-columns: 1fr;
-    }
-    
-    .ocupacion-container {
-        grid-template-columns: 1fr;
     }
 }

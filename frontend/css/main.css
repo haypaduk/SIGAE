@@ -159,19 +159,26 @@ html, body {
     gap: 12px;
 }
 
+/* En main.css, asegúrate que el avatar tenga estas propiedades */
 .user-avatar {
-    width: 38px;
-    height: 38px;
-    border-radius: 50%;
-    background: linear-gradient(135deg, #6B1520 0%, #5A0F18 100%);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: white;
-    font-weight: bold;
-    font-size: 0.9rem;
-    text-transform: uppercase;
-    border: 2px solid rgba(255,255,255,0.3);
+    width: 38px !important;
+    height: 38px !important;
+    border-radius: 50% !important;
+    overflow: hidden !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    flex-shrink: 0 !important;
+    background: transparent !important;
+    font-size: 0 !important;  /* ← Oculta cualquier texto */
+}
+
+.user-avatar img {
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: cover !important;
+    border-radius: 50% !important;
+    display: block !important;
 }
 
 .user-name {

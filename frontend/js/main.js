@@ -4,7 +4,7 @@
  * 
  * Funciones que se usan en TODAS las páginas:
  * - Logout
- * - Mostrar usuario en top bar
+ * - Mostrar usuario en top bar (con foto de perfil)
  * - Notificaciones (placeholder)
  */
 
@@ -17,59 +17,77 @@ function logout() {
 }
 
 // =====================================================
-// MOSTRAR USUARIO EN TOP BAR (con carreras para director)
+// MOSTRAR USUARIO EN TOP BAR (con foto de perfil)
 // =====================================================
-function mostrarUsuario(nombre = null, avatar = null) {
-    const avatarEl = document.getElementById('user-avatar');
-    const nameEl = document.getElementById('user-name');
+function mostrarUsuario() {
+    console.log('🔍 mostrarUsuario() ejecutada');
     
-    // Si no hay elementos en el DOM, salir
-    if (!avatarEl || !nameEl) return;
+    const userStr = localStorage.getItem('user');
+    if (!userStr) {
+        console.log('⚠️ No hay usuario en localStorage');
+        return;
+    }
     
-    // Si se pasan parámetros, usarlos; si no, usar localStorage
-    let nombreFinal = nombre;
-    let avatarFinal = avatar;
-    let carrerasTexto = '';
-    
-    if (!nombreFinal) {
-        const userStr = localStorage.getItem('user');
-        if (!userStr) {
-            avatarEl.textContent = 'U';
-            nameEl.textContent = 'Usuario';
+    try {
+        const user = JSON.parse(userStr);
+        console.log('👤 Usuario:', user);
+        
+        let nombreCompleto = user.nombre || 'Usuario';
+        let carrerasTexto = '';
+        
+        // Mostrar carreras si es director
+        if (user.rol === 'director' && user.carreras && user.carreras.length > 0) {
+            const claves = user.carreras.map(c => c.clave_carrera).join('/');
+            carrerasTexto = `<span class="carreras">(${claves})</span>`;
+        }
+        
+        // ===== ACTUALIZAR NOMBRE =====
+        const nameElement = document.getElementById('user-name');
+        if (nameElement) {
+            nameElement.innerHTML = `${nombreCompleto} ${carrerasTexto}`;
+            console.log('✅ Nombre actualizado');
+        }
+        
+        // ===== ACTUALIZAR FOTO DE PERFIL =====
+        const avatarElement = document.getElementById('user-avatar');
+        if (!avatarElement) {
+            console.log('❌ Elemento #user-avatar no encontrado');
             return;
         }
         
-        try {
-            const user = JSON.parse(userStr);
-            nombreFinal = user.nombre || 'Usuario';
-            
-            // ===== IMPORTANTE: CARRERAS PARA DIRECTOR =====
-            if (user.rol === 'director' && user.carreras && user.carreras.length > 0) {
-                const claves = user.carreras.map(c => c.clave_carrera).join('/');
-                carrerasTexto = `<span class="carreras">(${claves})</span>`;
-            }
-            
-            avatarFinal = user.nombre ? user.nombre.charAt(0).toUpperCase() : 'U';
-        } catch (error) {
-            console.error('Error mostrando usuario:', error);
-            nombreFinal = 'Usuario';
-            avatarFinal = 'U';
+        // === NUEVO: Si ya hay una imagen en el avatar, NO hacer nada ===
+        if (avatarElement.querySelector('img')) {
+            console.log('✅ Ya hay imagen en el avatar, no sobrescribir');
+            return;  // ← Salir sin hacer nada
         }
-    }
-    
-    // Si no viene avatar, generarlo
-    if (!avatarFinal) {
-        avatarFinal = nombreFinal.charAt(0).toUpperCase();
-    }
-    
-    // Asignar al DOM
-    avatarEl.textContent = avatarFinal;
-    
-    // Si hay carreras, mostrarlas como HTML; si no, solo el nombre
-    if (carrerasTexto) {
-        nameEl.innerHTML = `${nombreFinal} ${carrerasTexto}`;
-    } else {
-        nameEl.textContent = nombreFinal;
+        
+        console.log('⚠️ No hay imagen, mostrando foto de perfil');
+        
+        const fotoPerfil = user.foto_perfil || '/img/avatar.png';
+        console.log('📸 Foto de perfil:', fotoPerfil);
+        
+        // === LIMPIAR Y PONER IMAGEN ===
+        avatarElement.innerHTML = '';
+        avatarElement.style.cssText = 'width:38px;height:38px;border-radius:50%;overflow:hidden;display:flex;align-items:center;justify-content:center;flex-shrink:0;background:transparent;';
+        
+        const img = document.createElement('img');
+        img.src = fotoPerfil;
+        img.style.cssText = 'width:100%;height:100%;object-fit:cover;border-radius:50%;display:block;';
+        img.onload = function() {
+            console.log('✅ IMAGEN CARGADA EXITOSAMENTE');
+        };
+        img.onerror = function() {
+            console.log('❌ ERROR: No se pudo cargar la imagen:', fotoPerfil);
+            // Fallback: mostrar iniciales
+            const inicial = user.nombre.charAt(0).toUpperCase();
+            avatarElement.innerHTML = inicial;
+            avatarElement.style.cssText = 'width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg, #6B1520, #5A0F18);color:white;font-weight:bold;font-size:0.9rem;text-transform:uppercase;';
+        };
+        avatarElement.appendChild(img);
+        console.log('✅ Foto de perfil actualizada');
+        
+    } catch (error) {
+        console.error('❌ Error mostrando usuario:', error);
     }
 }
 
@@ -81,10 +99,25 @@ function mostrarNotificacion(mensaje) {
 }
 
 // =====================================================
-// INICIALIZACIÓN AUTOMÁTICA
+// INICIALIZACIÓN
 // =====================================================
 document.addEventListener('DOMContentLoaded', function() {
+    console.log('🚀 DOMContentLoaded - main.js');
     if (localStorage.getItem('user')) {
         mostrarUsuario();
     }
 });
+
+window.addEventListener('load', function() {
+    console.log('🔄 Window load - main.js');
+    if (localStorage.getItem('user')) {
+        mostrarUsuario();
+    }
+});
+
+if (document.readyState === 'complete' || document.readyState === 'interactive') {
+    console.log('⚡ Ejecución inmediata - main.js');
+    if (localStorage.getItem('user')) {
+        mostrarUsuario();
+    }
+}
