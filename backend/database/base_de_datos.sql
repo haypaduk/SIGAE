@@ -358,3 +358,58 @@ CREATE TABLE IF NOT EXISTS usuarios_carreras (
 INSERT INTO usuarios_carreras (id_usuario, id_carrera) VALUES
 (@director_id, (SELECT id_carrera FROM carreras WHERE clave_carrera = 'IDS')),
 (@director_id, (SELECT id_carrera FROM carreras WHERE clave_carrera = 'RIC'));
+
+
+--=======================================================
+-- Nueva tablas de base de datos para administrar materias y profesores
+-- =====================================================
+-- 1. CREAR TABLA DE MATERIAS
+-- =====================================================
+CREATE TABLE IF NOT EXISTS materias (
+    id_materia INT PRIMARY KEY AUTO_INCREMENT,
+    clave VARCHAR(10) UNIQUE NOT NULL,  -- Ej: 'DWI'
+    nombre VARCHAR(100) NOT NULL,       -- Ej: 'Desarrollo Web Integral'
+    id_carrera INT,
+    activo BOOLEAN DEFAULT TRUE,
+    creado_en TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (id_carrera) REFERENCES carreras(id_carrera)
+);
+
+-- =====================================================
+-- 2. CREAR TABLA DE PROFESORES
+-- =====================================================
+CREATE TABLE IF NOT EXISTS profesores (
+    id_profesor INT PRIMARY KEY AUTO_INCREMENT,
+    clave VARCHAR(10) UNIQUE NOT NULL,  -- Ej: 'RVCM'
+    nombre_completo VARCHAR(100) NOT NULL,
+    email VARCHAR(100),
+    activo BOOLEAN DEFAULT TRUE,
+    creado_en TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- =====================================================
+-- 3. MODIFICAR TABLA RESERVAS (agregar nuevas columnas)
+-- =====================================================
+
+-- Agregar columnas para materias y profesores
+ALTER TABLE reservas ADD COLUMN id_materia INT;
+ALTER TABLE reservas ADD COLUMN id_profesor INT;
+
+-- Agregar las llaves foráneas
+ALTER TABLE reservas ADD FOREIGN KEY (id_materia) REFERENCES materias(id_materia);
+ALTER TABLE reservas ADD FOREIGN KEY (id_profesor) REFERENCES profesores(id_profesor);
+
+-- =====================================================
+-- 4. ELIMINAR LAS COLUMNAS ANTIGUAS (materia y profesor como texto)
+-- =====================================================
+-- Primero, verifica que las columnas existen
+-- Si existen, elimínalas (esto borrará los datos viejos)
+ALTER TABLE reservas DROP COLUMN IF EXISTS materia;
+ALTER TABLE reservas DROP COLUMN IF EXISTS profesor;
+
+-- =====================================================
+-- 5. VERIFICAR LA ESTRUCTURA
+-- =====================================================
+DESCRIBE reservas;
+DESCRIBE materias;
+DESCRIBE profesores;
