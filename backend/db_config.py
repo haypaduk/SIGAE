@@ -247,6 +247,11 @@ def get_aulas_subutilizadas(limit=5):
         LIMIT %s
     """, (limit,))
 
+    resultados = cursor.fetchall()
+    cursor.close()
+    conn.close()
+    return resultados
+
 def get_aulas_por_carrera(carreras_ids):
     """
     Obtiene las aulas filtradas por las carreras del director
@@ -300,3 +305,362 @@ def get_aulas_por_carrera(carreras_ids):
     cursor.close()
     conn.close()
     return resultados
+
+# =====================================================
+# DASHBOARD - DATOS REALES (CORREGIDO)
+# =====================================================
+
+def get_dashboard_stats_admin():
+    """Estadísticas para el ADMINISTRADOR (ve TODO)"""
+    conn = get_db_connection()
+    if not conn:
+        return None
+    
+    cursor = conn.cursor(dictionary=True)
+    
+    try:
+        # Total de aulas activas
+        cursor.execute("SELECT COUNT(*) as total FROM aulas WHERE activo = 1")
+        total_aulas = cursor.fetchone()['total']
+        
+        # Total de edificios activos
+        cursor.execute("SELECT COUNT(*) as total FROM edificios WHERE activo = 1")
+        total_edificios = cursor.fetchone()['total']
+        
+        # Aulas CON reservas activas en la semana actual
+        cursor.execute("""
+            SELECT COUNT(DISTINCT id_aula) as ocupadas
+            FROM reservas 
+            WHERE estado = 'activa' 
+            AND YEARWEEK(fecha_asignacion) = YEARWEEK(CURDATE())
+        """)
+        ocupadas = cursor.fetchone()['ocupadas'] or 0
+        
+        # Aulas con uso parcial (tienen algunas reservas pero no todas)
+        cursor.execute("""
+            SELECT COUNT(DISTINCT id_aula) as parcial
+            FROM reservas 
+            WHERE estado = 'activa' 
+            AND YEARWEEK(fecha_asignacion) = YEARWEEK(CURDATE())
+        """)
+        parcial = cursor.fetchone()['parcial'] or 0
+        
+        # Calcular porcentajes
+        disponibles = total_aulas - ocupadas
+        porcentaje_global = round((ocupadas / total_aulas) * 100, 1) if total_aulas > 0 else 0
+        porcentaje_disponibles = round((disponibles / total_aulas) * 100, 1) if total_aulas > 0 else 0
+        porcentaje_ocupados = round((ocupadas / total_aulas) * 100, 1) if total_aulas > 0 else 0
+        porcentaje_parcial = round((parcial / total_aulas) * 100, 1) if total_aulas > 0 else 0
+        
+        return {
+            'total_espacios': total_aulas,
+            'total_edificios': total_edificios,
+            'disponibles': disponibles,
+            'porcentaje_disponibles': porcentaje_disponibles,
+            'uso_parcial': parcial,
+            'porcentaje_parcial': porcentaje_parcial,
+            'ocupados': ocupadas,
+            'porcentaje_ocupados': porcentaje_ocupados,
+            'porcentaje_global': porcentaje_global
+        }
+        
+    except Exception as e:
+        print(f"Error en get_dashboard_stats_admin: {e}")
+        return None
+        
+    finally:
+        cursor.close()
+        conn.close()
+
+
+def get_dashboard_stats_director(id_carrera):
+    """Estadísticas para un DIRECTOR (ve SOLO su carrera)"""
+    conn = get_db_connection()
+    if not conn:
+        return None
+    
+    cursor = conn.cursor(dictionary=True)
+    
+    try:
+        # Total de aulas de su carrera
+        cursor.execute("""
+            SELECT COUNT(*) as total 
+            FROM aulas 
+            WHERE id_carrera_asignada = %s AND activo = 1
+        """, (id_carrera,))
+        total_aulas = cursor.fetchone()['total'] or 0
+        
+        # Aulas CON reservas activas en la semana actual (de su carrera)
+        cursor.execute("""
+            SELECT COUNT(DISTINCT r.id_aula) as ocupadas
+            FROM reservas r
+            JOIN aulas a ON r.id_aula = a.id_aula
+            WHERE r.estado = 'activa' 
+            AND a.id_carrera_asignada = %s
+            AND YEARWEEK(r.fecha_asignacion) = YEARWEEK(CURDATE())
+        """, (id_carrera,))
+        ocupadas = cursor.fetchone()['ocupadas'] or 0
+        
+        # Calcular
+        disponibles = total_aulas - ocupadas
+        porcentaje_global = round((ocupadas / total_aulas) * 100, 1) if total_aulas > 0 else 0
+        
+        return {
+            'total_espacios': total_aulas,
+            'disponibles': disponibles,
+            'ocupados': ocupadas,
+            'porcentaje_global': porcentaje_global
+        }
+        
+    except Exception as e:
+        print(f"Error en get_dashboard_stats_director: {e}")
+        return None
+        
+    finally:
+        cursor.close()
+        conn.close()
+
+
+def get_alta_demanda_admin():
+    """Aulas con mayor ocupación (ADMIN - ve todas)"""
+    conn = get_db_connection()
+    if not conn:
+        return []
+    
+    cursor = conn.cursor(dictionary=True)
+    
+    try:
+        cursor.execute("""
+            SELECT 
+                a.identificador,
+                e.nombre as edificio,
+                a.capacidad,
+                COUNT(r.id_reserva) as reservas_count,
+                ROUND(
+                    (COUNT(r.id_reserva) * 100.0) / 
+                    ((SELECT COUNT(*) FROM bloques_horarios) * 5)
+                ) as porcentaje_ocupacion
+            FROM aulas a
+            JOIN edificios e ON a.id_edificio = e.id_edificio
+            LEFT JOIN reservas r ON a.id_aula = r.id_aula 
+                AND r.estado = 'activa'
+                AND YEARWEEK(r.fecha_asignacion) = YEARWEEK(CURDATE())
+            WHERE a.activo = 1
+            GROUP BY a.id_aula
+            HAVING porcentaje_ocupacion > 0
+            ORDER BY porcentaje_ocupacion DESC
+            LIMIT 5
+        """)
+        
+        return cursor.fetchall()
+        
+    except Exception as e:
+        print(f"Error en get_alta_demanda_admin: {e}")
+        return []
+        
+    finally:
+        cursor.close()
+        conn.close()
+
+
+def get_alta_demanda_director(id_carrera):
+    """Aulas con mayor ocupación (DIRECTOR - ve solo su carrera)"""
+    conn = get_db_connection()
+    if not conn:
+        return []
+    
+    cursor = conn.cursor(dictionary=True)
+    
+    try:
+        cursor.execute("""
+            SELECT 
+                a.identificador,
+                e.nombre as edificio,
+                a.capacidad,
+                COUNT(r.id_reserva) as reservas_count,
+                ROUND(
+                    (COUNT(r.id_reserva) * 100.0) / 
+                    ((SELECT COUNT(*) FROM bloques_horarios) * 5)
+                ) as porcentaje_ocupacion
+            FROM aulas a
+            JOIN edificios e ON a.id_edificio = e.id_edificio
+            LEFT JOIN reservas r ON a.id_aula = r.id_aula 
+                AND r.estado = 'activa'
+                AND YEARWEEK(r.fecha_asignacion) = YEARWEEK(CURDATE())
+            WHERE a.activo = 1 
+            AND a.id_carrera_asignada = %s
+            GROUP BY a.id_aula
+            HAVING porcentaje_ocupacion > 0
+            ORDER BY porcentaje_ocupacion DESC
+            LIMIT 5
+        """, (id_carrera,))
+        
+        return cursor.fetchall()
+        
+    except Exception as e:
+        print(f"Error en get_alta_demanda_director: {e}")
+        return []
+        
+    finally:
+        cursor.close()
+        conn.close()
+
+
+def get_subutilizadas_admin():
+    """Aulas con menor ocupación (ADMIN - ve todas)"""
+    conn = get_db_connection()
+    if not conn:
+        return []
+    
+    cursor = conn.cursor(dictionary=True)
+    
+    try:
+        cursor.execute("""
+            SELECT 
+                a.identificador,
+                e.nombre as edificio,
+                a.capacidad,
+                COUNT(r.id_reserva) as reservas_count,
+                ROUND(
+                    (COUNT(r.id_reserva) * 100.0) / 
+                    ((SELECT COUNT(*) FROM bloques_horarios) * 5)
+                ) as porcentaje_ocupacion
+            FROM aulas a
+            JOIN edificios e ON a.id_edificio = e.id_edificio
+            LEFT JOIN reservas r ON a.id_aula = r.id_aula 
+                AND r.estado = 'activa'
+                AND YEARWEEK(r.fecha_asignacion) = YEARWEEK(CURDATE())
+            WHERE a.activo = 1
+            GROUP BY a.id_aula
+            ORDER BY porcentaje_ocupacion ASC
+            LIMIT 5
+        """)
+        
+        return cursor.fetchall()
+        
+    except Exception as e:
+        print(f"Error en get_subutilizadas_admin: {e}")
+        return []
+        
+    finally:
+        cursor.close()
+        conn.close()
+
+
+def get_subutilizadas_director(id_carrera):
+    """Aulas con menor ocupación (DIRECTOR - ve solo su carrera)"""
+    conn = get_db_connection()
+    if not conn:
+        return []
+    
+    cursor = conn.cursor(dictionary=True)
+    
+    try:
+        cursor.execute("""
+            SELECT 
+                a.identificador,
+                e.nombre as edificio,
+                a.capacidad,
+                COUNT(r.id_reserva) as reservas_count,
+                ROUND(
+                    (COUNT(r.id_reserva) * 100.0) / 
+                    ((SELECT COUNT(*) FROM bloques_horarios) * 5)
+                ) as porcentaje_ocupacion
+            FROM aulas a
+            JOIN edificios e ON a.id_edificio = e.id_edificio
+            LEFT JOIN reservas r ON a.id_aula = r.id_aula 
+                AND r.estado = 'activa'
+                AND YEARWEEK(r.fecha_asignacion) = YEARWEEK(CURDATE())
+            WHERE a.activo = 1 
+            AND a.id_carrera_asignada = %s
+            GROUP BY a.id_aula
+            ORDER BY porcentaje_ocupacion ASC
+            LIMIT 5
+        """, (id_carrera,))
+        
+        return cursor.fetchall()
+        
+    except Exception as e:
+        print(f"Error en get_subutilizadas_director: {e}")
+        return []
+        
+    finally:
+        cursor.close()
+        conn.close()
+
+
+def get_ocupacion_edificios_admin():
+    """Ocupación por edificio (ADMIN - ve todos)"""
+    conn = get_db_connection()
+    if not conn:
+        return []
+    
+    cursor = conn.cursor(dictionary=True)
+    
+    try:
+        cursor.execute("""
+            SELECT 
+                e.nombre,
+                COUNT(DISTINCT a.id_aula) as total_aulas,
+                COUNT(DISTINCT r.id_aula) as aulas_ocupadas,
+                ROUND(
+                    (COUNT(DISTINCT r.id_aula) * 100.0) / COUNT(DISTINCT a.id_aula)
+                ) as porcentaje
+            FROM edificios e
+            JOIN aulas a ON e.id_edificio = a.id_edificio
+            LEFT JOIN reservas r ON a.id_aula = r.id_aula 
+                AND r.estado = 'activa'
+                AND YEARWEEK(r.fecha_asignacion) = YEARWEEK(CURDATE())
+            WHERE e.activo = 1 AND a.activo = 1
+            GROUP BY e.id_edificio
+            ORDER BY e.nombre
+        """)
+        
+        return cursor.fetchall()
+        
+    except Exception as e:
+        print(f"Error en get_ocupacion_edificios_admin: {e}")
+        return []
+        
+    finally:
+        cursor.close()
+        conn.close()
+
+
+def get_ocupacion_edificios_director(id_carrera):
+    """Ocupación por edificio (DIRECTOR - ve solo su carrera)"""
+    conn = get_db_connection()
+    if not conn:
+        return []
+    
+    cursor = conn.cursor(dictionary=True)
+    
+    try:
+        cursor.execute("""
+            SELECT 
+                e.nombre,
+                COUNT(DISTINCT a.id_aula) as total_aulas,
+                COUNT(DISTINCT r.id_aula) as aulas_ocupadas,
+                ROUND(
+                    (COUNT(DISTINCT r.id_aula) * 100.0) / COUNT(DISTINCT a.id_aula)
+                ) as porcentaje
+            FROM edificios e
+            JOIN aulas a ON e.id_edificio = a.id_edificio
+            LEFT JOIN reservas r ON a.id_aula = r.id_aula 
+                AND r.estado = 'activa'
+                AND YEARWEEK(r.fecha_asignacion) = YEARWEEK(CURDATE())
+            WHERE e.activo = 1 AND a.activo = 1
+            AND a.id_carrera_asignada = %s
+            GROUP BY e.id_edificio
+            ORDER BY e.nombre
+        """, (id_carrera,))
+        
+        return cursor.fetchall()
+        
+    except Exception as e:
+        print(f"Error en get_ocupacion_edificios_director: {e}")
+        return []
+        
+    finally:
+        cursor.close()
+        conn.close()

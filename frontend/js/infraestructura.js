@@ -27,9 +27,9 @@ async function cargarEdificios() {
             <div class="grid-edificios">
                 ${edificios.map(e => `
                     <div class="edificio-card" onclick="cargarAulas(${e.id_edificio}, '${e.nombre}')">
-                        <h3>${e.nombre}</h3>
-                        <p class="tipo">${e.tipo_edificio}</p>
-                        <p class="click-hint">👆 Haz clic para ver aulas</p>
+                        <h3><i class="fas fa-building" style="color: #8B1C2A; margin-right: 8px;"></i>${e.nombre}</h3>
+                        <p class="tipo"><i class="fas fa-tag" style="margin-right: 5px;"></i>${e.tipo_edificio}</p>
+                        <p class="click-hint"><i class="fas fa-hand-pointer" style="margin-right: 5px;"></i>Haz clic para ver aulas</p>
                     </div>
                 `).join('')}
             </div>
@@ -50,8 +50,10 @@ async function cargarAulas(edificioId, edificioNombre) {
         // Mostrar sección de aulas
         const container = document.getElementById('aulas-container');
         container.innerHTML = `
-            <h3>🏢 ${edificioNombre} - Aulas</h3>
-            <button class="btn-volver" onclick="volverAEdificios()">⬅ Volver a edificios</button>
+            <h3><i class="fas fa-building" style="color: #8B1C2A; margin-right: 8px;"></i> ${edificioNombre} - Aulas</h3>
+            <button class="btn-volver" onclick="volverAEdificios()">
+                <i class="fas fa-arrow-left" style="margin-right: 5px;"></i> Volver a edificios
+            </button>
             <div class="grid-aulas" id="aulas-grid">
                 <p>Cargando aulas...</p>
             </div>
@@ -73,16 +75,21 @@ async function cargarAulas(edificioId, edificioNombre) {
             if (porcentaje >= 80) clasePorcentaje = 'alta';
             else if (porcentaje >= 50) clasePorcentaje = 'media';
             
+            // Icono según el tipo de aula
+            let iconoTipo = 'fa-chalkboard'; // Aula
+            if (aula.tipo === 'Auditorio') iconoTipo = 'fa-users';
+            else if (aula.tipo === 'Laboratorio') iconoTipo = 'fa-flask';
+            
             return `
                 <div class="aula-card">
                     <div class="header">
-                        <h4>${aula.identificador}</h4>
+                        <h4><i class="fas ${iconoTipo}" style="color: #8B1C2A; margin-right: 8px;"></i>${aula.identificador}</h4>
                         <span class="porcentaje ${clasePorcentaje}">${porcentaje}%</span>
                     </div>
-                    <p class="detalles">${aula.piso} · ${aula.capacidad} lugares</p>
-                    <p class="tipo-aula">${aula.tipo || 'Aula'} ${aula.carrera ? '· ' + aula.carrera : ''}</p>
+                    <p class="detalles"><i class="fas fa-layer-group" style="margin-right: 5px;"></i>${aula.piso} · <i class="fas fa-users" style="margin-right: 5px;"></i>${aula.capacidad} lugares</p>
+                    <p class="tipo-aula"><i class="fas fa-tag" style="margin-right: 5px;"></i>${aula.tipo || 'Aula'} ${aula.carrera ? '· ' + aula.carrera : ''}</p>
                     <button class="btn-ver-horario" onclick="verHorario(${aula.id_aula})">
-                        📅 Ver horario
+                        <i class="fas fa-calendar-alt" style="margin-right: 5px;"></i> Ver horario
                     </button>
                 </div>
             `;
@@ -110,9 +117,18 @@ function volverAEdificios() {
 function verHorario(aulaId) {
     console.log('📅 Ver horario del aula ID:', aulaId);
     
-    // Por ahora, modal simple
-    // Después se implementará el horario completo
-    alert(`📅 Horario del aula ID: ${aulaId}\n\n(Próximamente se mostrará el horario con materias, profesores y grupos)`);
+    // Cargar datos para reservas (materias, profesores, días, bloques)
+    cargarDatosReservas().then(() => {
+        // Cargar el horario del aula
+        cargarHorario(aulaId);
+    });
+    
+    // Abrir el modal de horario
+    document.getElementById('horarioModal').classList.add('active');
+}
+
+function cerrarHorarioModal() {
+    document.getElementById('horarioModal').classList.remove('active');
 }
 
 // =====================================================

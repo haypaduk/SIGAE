@@ -1,11 +1,6 @@
 /**
  * SIGAE - ESTILOS DE INFRAESTRUCTURA
  * Archivo: frontend/css/infraestructura.css
- * 
- * Estilos específicos para la página de infraestructura:
- * - Tarjetas de edificios
- * - Tarjetas de aulas
- * - Filtros
  */
 
 /* =====================================================
@@ -64,10 +59,12 @@
 
 .aula-card .header h4 {
     color: #333;
+    margin: 0;
 }
 
 .aula-card .porcentaje {
     font-weight: bold;
+    font-size: 1.1rem;
 }
 
 .aula-card .porcentaje.alta {
@@ -117,7 +114,7 @@
     background: #667eea;
     color: white;
     border: none;
-    padding: 5px 10px;
+    padding: 5px 15px;
     border-radius: 5px;
     cursor: pointer;
     margin-top: 10px;
@@ -144,14 +141,194 @@
 }
 
 /* =====================================================
-   RESPONSIVE
+   MODAL DE HORARIO
+   ===================================================== */
+#horarioModal .modal-content {
+    max-width: 950px !important;
+    padding: 25px 30px !important;
+    max-height: 90vh !important;
+    overflow-y: auto !important;
+}
+
+#horarioModal .modal-content h3 {
+    font-size: 1.4rem !important;
+    margin-bottom: 15px !important;
+    color: #333;
+}
+
+/* =====================================================
+   TABLA DE HORARIO
+   ===================================================== */
+.horario-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.85rem;
+    margin-top: 10px;
+}
+
+.horario-table thead th {
+    background: #8B1C2A;
+    color: white;
+    padding: 10px 8px;
+    text-align: center;
+    border: 1px solid #8B1C2A;
+    font-weight: 600;
+}
+
+.horario-table thead th:first-child {
+    background: #6B1520;
+}
+
+.horario-table tbody td {
+    border: 1px solid #e0e0e0;
+    padding: 8px 6px;
+    text-align: center;
+    vertical-align: middle;
+    min-height: 60px;
+    height: 60px;
+    min-width: 80px;
+}
+
+.horario-table tbody td.hora {
+    background: #f8f9fa;
+    font-weight: 600;
+    color: #555;
+    font-size: 0.75rem;
+    white-space: nowrap;
+    min-width: 90px;
+}
+
+.horario-table tbody td.disponible {
+    background: #e8f5e9;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.horario-table tbody td.disponible:hover {
+    background: #c8e6c9;
+}
+
+.horario-table tbody td.ocupado {
+    background: #fce4ec;
+    position: relative;
+}
+
+.horario-table tbody td.ocupado .materia {
+    font-weight: 600;
+    color: #8B1C2A;
+    font-size: 0.8rem;
+}
+
+.horario-table tbody td.ocupado .profesor {
+    font-size: 0.7rem;
+    color: #555;
+}
+
+.horario-table tbody td.ocupado .grupo {
+    font-size: 0.7rem;
+    color: #888;
+    font-weight: 500;
+}
+
+.horario-table tbody td.ocupado .acciones {
+    margin-top: 4px;
+    display: flex;
+    gap: 4px;
+    justify-content: center;
+}
+
+.horario-table .btn-agregar {
+    background: #27ae60;
+    color: white;
+    border: none;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    font-size: 1.2rem;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto;
+}
+
+.horario-table .btn-agregar:hover {
+    background: #219653;
+    transform: scale(1.1);
+}
+
+.horario-table .btn-sm {
+    padding: 3px 8px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.7rem;
+    transition: background 0.2s;
+}
+
+.horario-table .btn-sm.btn-warning {
+    background: #f39c12;
+    color: white;
+}
+
+.horario-table .btn-sm.btn-warning:hover {
+    background: #d68910;
+}
+
+.horario-table .btn-sm.btn-danger {
+    background: #e74c3c;
+    color: white;
+}
+
+.horario-table .btn-sm.btn-danger:hover {
+    background: #c0392b;
+}
+
+/* =====================================================
+   RESPONSIVE PARA HORARIO
    ===================================================== */
 @media (max-width: 768px) {
-    .grid-edificios {
-        grid-template-columns: 1fr;
+    .horario-table {
+        font-size: 0.7rem;
     }
     
-    .grid-aulas {
-        grid-template-columns: 1fr;
+    .horario-table thead th {
+        padding: 5px 4px;
+        font-size: 0.65rem;
+    }
+    
+    .horario-table tbody td {
+        padding: 4px 3px;
+        min-height: 45px;
+        height: 45px;
+        min-width: 50px;
+    }
+    
+    .horario-table tbody td.ocupado .materia {
+        font-size: 0.65rem;
+    }
+    
+    .horario-table tbody td.ocupado .profesor {
+        font-size: 0.6rem;
+    }
+    
+    .horario-table tbody td.ocupado .grupo {
+        font-size: 0.6rem;
+    }
+    
+    .horario-table .btn-agregar {
+        width: 22px;
+        height: 22px;
+        font-size: 0.9rem;
+    }
+    
+    .horario-table .btn-sm {
+        padding: 2px 5px;
+        font-size: 0.6rem;
+    }
+    
+    #horarioModal .modal-content {
+        padding: 15px !important;
     }
 }

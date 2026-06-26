@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestionar Carreras - SIGAE</title>
+    <link rel="stylesheet" href="/css/main.css">
+    <link rel="stylesheet" href="/css/admin.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+</head>
+<body>
+    <div class="dashboard-wrapper">
+        <!-- Top Bar -->
+        <div class="top-bar">
+            <div class="top-bar-left">
+                <div class="top-bar-logos">
+                    <img src="/frontend/img/rectoria_cortada.jpg" alt="Logo UTVT" class="logo">
+                    <span class="separator"></span>
+                    <img src="/frontend/img/utvt_logo.jpg" alt="Logo SIGAE" class="logo">
+                </div>
+                <div class="top-bar-text">
+                    <div class="titulo">UTVT · SISTEMA DE GESTIÓN</div>
+                    <div class="subtitulo">SIGAE</div>
+                </div>
+            </div>
+            <div class="top-bar-right">
+                <div class="user-info">
+                    <div class="user-avatar" id="user-avatar"></div>
+                    <div class="user-name" id="user-name">Cargando...</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="dashboard-body">
+            <!-- Sidebar -->
+            <div class="sidebar">
+                <div class="sidebar-header">
+                    <h2><i class="fas fa-cubes"></i> SIGAE</h2>
+                    <p><i class="fas fa-door-open"></i> Gestión de Aulas</p>
+                </div>
+                <ul class="sidebar-menu">
+                    <li><a href="/dashboard"><i class="fas fa-chart-pie"></i> Dashboard</a></li>
+                    <li><a href="/infraestructura"><i class="fas fa-building"></i> Infraestructura</a></li>
+                    <li><a href="/solicitudes"><i class="fas fa-file-alt"></i> Solicitudes</a></li>
+                    <li><a href="/reportes"><i class="fas fa-chart-bar"></i> Reportes</a></li>
+                    <li class="active"><a href="/admin/carreras"><i class="fas fa-cogs"></i> Administración</a></li>
+                    <li><a href="#" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Cerrar Sesión</a></li>
+                </ul>
+            </div>
+
+            <div class="main-content">
+            <div class="admin-container">
+                <a href="/admin" class="btn-back">
+                    <i class="fas fa-arrow-left"></i> Volver al panel de administración
+                </a>
+                
+                <div class="admin-header">
+                    <h2><i class="fas fa-graduation-cap"></i> Gestión de Carreras</h2>
+                    <button class="btn-primary" onclick="abrirModalCrear()">
+                        <i class="fas fa-plus"></i> Nueva Carrera
+                    </button>
+                </div>
+                <!-- ... resto del contenido ... -->
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Clave</th>
+                                    <th>Nombre</th>
+                                    <th>Estado</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody id="carreras-table">
+                                <tr>
+                                    <td colspan="4" style="text-align:center;">Cargando carreras...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================================= -->
+    <!-- MODAL CREAR/EDITAR CARRERA                    -->
+    <!-- ============================================= -->
+    <div class="modal" id="carreraModal">
+        <div class="modal-content">
+            <h3 id="modal-title">Nueva Carrera</h3>
+            <form id="carreraForm">
+                <input type="hidden" id="carrera-id">
+                <div class="form-group">
+                    <label for="carrera-clave">Clave de la carrera</label>
+                    <input type="text" id="carrera-clave" placeholder="Ej: ISC" required>
+                </div>
+                <div class="form-group">
+                    <label for="carrera-nombre">Nombre de la carrera</label>
+                    <input type="text" id="carrera-nombre" placeholder="Ej: Ingeniería en Sistemas" required>
+                </div>
+                <div class="form-group">
+                    <label for="carrera-activo">Estado</label>
+                    <select id="carrera-activo">
+                        <option value="1">Activo</option>
+                        <option value="0">Inactivo</option>
+                    </select>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn-secondary" onclick="cerrarModal()">Cancelar</button>
+                    <button type="submit" class="btn-primary">Guardar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="/frontend/js/main.js"></script>
+    <script src="/frontend/js/admin/carreras.js"></script>
+    <script src="/frontend/js/admin/utils.js"></script>
+</body>
+</html>

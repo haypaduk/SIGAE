@@ -413,3 +413,18 @@ ALTER TABLE reservas DROP COLUMN IF EXISTS profesor;
 DESCRIBE reservas;
 DESCRIBE materias;
 DESCRIBE profesores;
+
+-- =====================================================
+-- 6. ACTUALIZAR NOMBRES DE TIPOS DE AULA
+-- =====================================================
+
+-- Actualizar los nombres de los tipos para que sean más intuitivos
+UPDATE tipos_aula 
+SET nombre_tipo = 'Aula' 
+WHERE nombre_tipo = 'Docencia';
+
+UPDATE tipos_aula 
+SET nombre_tipo = 'Laboratorio' 
+WHERE nombre_tipo = 'Laboratorio Pesado';
+
+-- Auditorio ya está bien, no necesita cambio

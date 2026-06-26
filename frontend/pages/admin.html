@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Administración - SIGAE</title>
+    <link rel="stylesheet" href="/css/main.css">
+    <link rel="stylesheet" href="/css/admin.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+</head>
+<body>
+    <div class="dashboard-wrapper">
+        <!-- Top Bar -->
+        <div class="top-bar">
+            <div class="top-bar-left">
+                <div class="top-bar-logos">
+                    <img src="/frontend/img/rectoria_cortada.jpg" alt="Logo UTVT" class="logo">
+                    <span class="separator"></span>
+                    <img src="/frontend/img/utvt_logo.jpg" alt="Logo SIGAE" class="logo">
+                </div>
+                <div class="top-bar-text">
+                    <div class="titulo">UTVT · SISTEMA DE GESTIÓN</div>
+                    <div class="subtitulo">SIGAE</div>
+                </div>
+            </div>
+            <div class="top-bar-right">
+                <div class="user-info">
+                    <div class="user-avatar" id="user-avatar"></div>
+                    <div class="user-name" id="user-name">Cargando...</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="dashboard-body">
+            <!-- Sidebar -->
+            <div class="sidebar">
+                <div class="sidebar-header">
+                    <h2><i class="fas fa-cubes"></i> SIGAE</h2>
+                    <p><i class="fas fa-door-open"></i> Gestión de Aulas</p>
+                </div>
+                <ul class="sidebar-menu">
+                    <li><a href="/dashboard"><i class="fas fa-chart-pie"></i> Dashboard</a></li>
+                    <li><a href="/infraestructura"><i class="fas fa-building"></i> Infraestructura</a></li>
+                    <li><a href="/solicitudes"><i class="fas fa-file-alt"></i> Solicitudes</a></li>
+                    <li><a href="/reportes"><i class="fas fa-chart-bar"></i> Reportes</a></li>
+                    <li class="active"><a href="/admin"><i class="fas fa-cogs"></i> Administración</a></li>
+                    <li><a href="#" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Cerrar Sesión</a></li>
+                </ul>
+            </div>
+
+            <div class="main-content">
+                <div class="content">
+                    <h2><i class="fas fa-cogs"></i> Panel de Administración</h2>
+                    <p style="color: #666; margin-bottom: 30px;">Gestiona todos los datos del sistema</p>
+
+                    <div class="admin-grid">
+                        <a href="/admin/carreras" class="admin-card">
+                            <i class="fas fa-graduation-cap"></i>
+                            <h3>Carreras</h3>
+                            <p>Gestionar carreras</p>
+                        </a>
+                        <a href="/admin/edificios" class="admin-card">
+                            <i class="fas fa-building"></i>
+                            <h3>Edificios</h3>
+                            <p>Gestionar edificios</p>
+                        </a>
+                        <a href="/admin/aulas" class="admin-card">
+                            <i class="fas fa-chalkboard"></i>
+                            <h3>Aulas</h3>
+                            <p>Gestionar aulas y laboratorios</p>
+                        </a>
+                        <a href="/admin/materias" class="admin-card">
+                            <i class="fas fa-book"></i>
+                            <h3>Materias</h3>
+                            <p>Gestionar materias</p>
+                        </a>
+                        <a href="/admin/profesores" class="admin-card">
+                            <i class="fas fa-user-tie"></i>
+                            <h3>Profesores</h3>
+                            <p>Gestionar profesores</p>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/frontend/js/main.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            mostrarUsuario();
+        });
+    </script>
+</body>
+</html>

@@ -92,6 +92,48 @@ function mostrarUsuario() {
 }
 
 // =====================================================
+// MENÚ DINÁMICO - Mostrar Administración solo para admin
+// =====================================================
+function generarMenu() {
+    const userStr = localStorage.getItem('user');
+    if (!userStr) return;
+    
+    try {
+        const user = JSON.parse(userStr);
+        const menu = document.querySelector('.sidebar-menu');
+        if (!menu) return;
+        
+        // Si es admin, agregar el ítem de Administración
+        if (user.rol === 'admin') {
+            // Buscar si ya existe el ítem
+            let adminItem = menu.querySelector('.admin-menu-item');
+            if (!adminItem) {
+                const li = document.createElement('li');
+                li.className = 'admin-menu-item';
+                li.innerHTML = `<a href="/admin"><i class="fas fa-cogs"></i> Administración</a>`;
+                
+                // Insertar antes de "Cerrar Sesión"
+                const cerrarItem = menu.querySelector('li:last-child');
+                menu.insertBefore(li, cerrarItem);
+            }
+        } else {
+            // Si es director, eliminar el ítem de Administración si existe
+            const adminItem = menu.querySelector('.admin-menu-item');
+            if (adminItem) {
+                adminItem.remove();
+            }
+        }
+    } catch (error) {
+        console.error('Error generando menú:', error);
+    }
+}
+
+// Ejecutar cuando el DOM esté listo
+document.addEventListener('DOMContentLoaded', function() {
+    generarMenu();
+});
+
+// =====================================================
 // NOTIFICACIONES (placeholder)
 // =====================================================
 function mostrarNotificacion(mensaje) {
