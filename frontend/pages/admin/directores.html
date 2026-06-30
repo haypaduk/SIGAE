@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestionar Directores - SIGAE</title>
+    <link rel="stylesheet" href="/css/main.css">
+    <link rel="stylesheet" href="/css/admin.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+</head>
+<body>
+    <div class="dashboard-wrapper">
+        <!-- Top Bar -->
+        <div class="top-bar">
+            <div class="top-bar-left">
+                <div class="top-bar-logos">
+                    <img src="/frontend/img/rectoria_cortada.jpg" alt="Logo UTVT" class="logo">
+                    <span class="separator"></span>
+                    <img src="/frontend/img/utvt_logo.jpg" alt="Logo SIGAE" class="logo">
+                </div>
+                <div class="top-bar-text">
+                    <div class="titulo">UTVT · SISTEMA DE GESTIÓN</div>
+                    <div class="subtitulo">SIGAE</div>
+                </div>
+            </div>
+            <div class="top-bar-right">
+                <div class="user-info">
+                    <div class="user-avatar" id="user-avatar"></div>
+                    <div class="user-name" id="user-name">Cargando...</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="dashboard-body">
+            <!-- Sidebar -->
+            <div class="sidebar">
+                <div class="sidebar-header">
+                    <h2><i class="fas fa-cubes"></i> SIGAE</h2>
+                    <p><i class="fas fa-door-open"></i> Gestión de Aulas</p>
+                </div>
+                <ul class="sidebar-menu">
+                    <li><a href="/dashboard"><i class="fas fa-chart-pie"></i> Dashboard</a></li>
+                    <li><a href="/infraestructura"><i class="fas fa-building"></i> Infraestructura</a></li>
+                    <li><a href="/solicitudes"><i class="fas fa-file-alt"></i> Solicitudes</a></li>
+                    <li><a href="/reportes"><i class="fas fa-chart-bar"></i> Reportes</a></li>
+                    <li class="active"><a href="/admin/directores"><i class="fas fa-cogs"></i> Administración</a></li>
+                    <li><a href="#" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Cerrar Sesión</a></li>
+                </ul>
+            </div>
+
+            <div class="main-content">
+                <div class="admin-container">
+                    <a href="/admin" class="btn-back">
+                        <i class="fas fa-arrow-left"></i> Volver al panel de administración
+                    </a>
+                    
+                    <div class="admin-header">
+                        <h2><i class="fas fa-user-tie"></i> Gestión de Directores</h2>
+                        <button class="btn-primary" onclick="abrirModalCrear()">
+                            <i class="fas fa-plus"></i> Nuevo Director
+                        </button>
+                    </div>
+
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Nombre</th>
+                                    <th>Email</th>
+                                    <th>Rol</th>
+                                    <th>Carreras</th>
+                                    <th>Estado</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody id="directores-table">
+                                <tr>
+                                    <td colspan="6" style="text-align:center;">Cargando directores...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================================= -->
+    <!-- MODAL CREAR/EDITAR DIRECTOR                   -->
+    <!-- ============================================= -->
+    <div class="modal" id="directorModal">
+        <div class="modal-content compact" style="max-width: 550px;">
+            <h3 id="modal-title">Nuevo Director</h3>
+            <form id="directorForm">
+                <input type="hidden" id="director-id">
+                <div class="form-group">
+                    <label for="director-nombre">Nombre completo</label>
+                    <input type="text" id="director-nombre" placeholder="Ej: Dr. Juan Pérez" required>
+                </div>
+                <div class="form-group">
+                    <label for="director-email">Correo electrónico</label>
+                    <input type="email" id="director-email" placeholder="ejemplo@utvtol.edu.mx" required>
+                </div>
+                <div class="form-group" id="password-group">
+                    <label for="director-password">Contraseña</label>
+                    <input type="password" id="director-password" placeholder="••••••••">
+                    <small>Solo para nuevos directores (déjalo vacío si no quieres cambiarla)</small>
+                </div>
+                <div class="form-group">
+                    <label for="director-foto">Foto de perfil</label>
+                    <input type="file" id="director-foto" accept="image/*">
+                    <small style="color: #999; font-size: 0.7rem;">Formatos permitidos: JPG, PNG, GIF (máx. 2MB)</small>
+                    <div id="foto-preview" style="margin-top: 8px;">
+                        <!-- Aquí se mostrará la vista previa de la foto -->
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="director-rol">Rol</label>
+                    <select id="director-rol">
+                        <option value="director">Director</option>
+                        <option value="admin">Administrador</option>
+                    </select>
+                </div>
+                <div class="form-group" id="carreras-group">
+                    <label for="director-carreras">Carreras asociadas</label>
+                    <select id="director-carreras" multiple style="height: 80px;">
+                        <!-- Se llena con JS -->
+                    </select>
+                    <small>Mantén presionado Ctrl para seleccionar varias carreras</small>
+                </div>
+                <div class="form-group">
+                    <label for="director-activo">Estado</label>
+                    <select id="director-activo">
+                        <option value="1">Activo</option>
+                        <option value="0">Inactivo</option>
+                    </select>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn-secondary" onclick="cerrarModal()">Cancelar</button>
+                    <button type="submit" class="btn-primary">Guardar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="/js/main.js"></script>
+    <script src="/js/admin/utils.js"></script>
+    <script src="/js/admin/directores.js"></script>
+</body>
+</html>

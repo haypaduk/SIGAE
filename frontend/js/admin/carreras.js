@@ -27,6 +27,7 @@ async function cargarCarreras() {
         console.error('Error cargando carreras:', error);
         document.getElementById('carreras-table').innerHTML = 
             '<tr><td colspan="4" style="text-align:center;color:red;">Error al cargar carreras</td></tr>';
+        showToast('Error al cargar las carreras', 'error');
     }
 }
 
@@ -67,7 +68,12 @@ function abrirModalCrear() {
     document.getElementById('carrera-clave').value = '';
     document.getElementById('carrera-nombre').value = '';
     document.getElementById('carrera-activo').value = '1';
-    document.getElementById('carrera-clave').readOnly = false;
+    
+    // FORZAR eliminación del atributo readonly
+    const claveInput = document.getElementById('carrera-clave');
+    claveInput.removeAttribute('readonly');
+    claveInput.readOnly = false;
+    
     document.getElementById('carreraModal').classList.add('active');
 }
 
@@ -82,7 +88,7 @@ function editarCarrera(id) {
     document.getElementById('modal-title').textContent = 'Editar Carrera';
     document.getElementById('carrera-id').value = carrera.id_carrera;
     document.getElementById('carrera-clave').value = carrera.clave_carrera;
-    document.getElementById('carrera-clave').readOnly = true;
+    // document.getElementById('carrera-clave').readOnly = true; -- Eliminado para permitir edición de clave
     document.getElementById('carrera-nombre').value = carrera.nombre_carrera;
     document.getElementById('carrera-activo').value = carrera.activo;
     document.getElementById('carreraModal').classList.add('active');
@@ -94,15 +100,15 @@ async function eliminarCarrera(id) {
     try {
         const res = await fetch(`/api/admin/carreras/${id}`, { method: 'DELETE' });
         if (res.ok) {
-            alert('Carrera eliminada');
+            showToast('Carrera eliminada correctamente', 'success');
             cargarCarreras();
         } else {
             const data = await res.json();
-            alert(data.error || 'Error al eliminar');
+            showToast(data.error || 'Error al eliminar', 'error');
         }
     } catch (error) {
         console.error('Error:', error);
-        alert('Error de conexión');
+        showToast('Error de conexión', 'error');
     }
 }
 
@@ -135,16 +141,16 @@ document.getElementById('carreraForm').addEventListener('submit', async function
         });
 
         if (res.ok) {
-            alert(id ? 'Carrera actualizada' : 'Carrera creada');
+            showToast(id ? 'Carrera actualizada correctamente' : 'Carrera creada correctamente', 'success');
             cerrarModal();
             cargarCarreras();
         } else {
             const error = await res.json();
-            alert(error.error || 'Error al guardar');
+            showToast(error.error || 'Error al guardar', 'error');
         }
     } catch (error) {
         console.error('Error:', error);
-        alert('Error de conexión');
+        showToast('Error de conexión', 'error');
     }
 });
 

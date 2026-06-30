@@ -85,7 +85,7 @@ function editarProfesor(id) {
     document.getElementById('modal-title').textContent = 'Editar Profesor';
     document.getElementById('profesor-id').value = profesor.id_profesor;
     document.getElementById('profesor-clave').value = profesor.clave;
-    document.getElementById('profesor-clave').readOnly = true;
+    // document.getElementById('profesor-clave').readOnly = true; -- Eliminado para permitir edición de clave
     document.getElementById('profesor-nombre').value = profesor.nombre_completo;
     document.getElementById('profesor-email').value = profesor.email || '';
     document.getElementById('profesor-activo').value = profesor.activo;

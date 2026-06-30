@@ -75,8 +75,7 @@
             <!-- Contenido -->
             <div class="main-content">
                 <div class="content">
-                    <h2>🏢 Edificios</h2>
-                    <div id="edificios-container">
+                    <h2><i class="fas fa-building" style="color: #8B1C2A; margin-right: 10px;"></i> Edificios</h2>                    <div id="edificios-container">
                         <p>Cargando edificios...</p>
                     </div>
                     
@@ -92,15 +91,64 @@
     <!-- MODAL DE HORARIO                             -->
     <!-- ============================================= -->
     <div class="modal" id="horarioModal">
-        <div class="modal-content" style="max-width: 950px; max-height: 90vh; overflow-y: auto; padding: 25px 30px;">
-            <h3 id="horario-titulo" style="margin-bottom: 15px; color: #333; font-size: 1.4rem;">
+        <div class="modal-content" style="
+            max-width: 1200px; 
+            max-height: 92vh; 
+            overflow-y: auto; 
+            padding: 30px 35px; 
+            position: relative;
+            animation: modalFadeIn 0.3s ease-out;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        ">
+            <!-- Botón cerrar (X) en la esquina superior derecha -->
+            <button onclick="cerrarHorarioModal()" style="
+                position: absolute;
+                top: 15px;
+                right: 20px;
+                background: none;
+                border: none;
+                font-size: 2.2rem;
+                cursor: pointer;
+                color: #999;
+                transition: color 0.3s, transform 0.2s;
+                padding: 0 5px;
+                line-height: 1;
+                z-index: 10;
+            " 
+            onmouseover="this.style.color='#8B1C2A'; this.style.transform='scale(1.2) rotate(90deg)'"
+            onmouseout="this.style.color='#999'; this.style.transform='scale(1) rotate(0deg)'"
+            title="Cerrar">
+                ×
+            </button>
+            
+            <h3 id="horario-titulo" style="
+                margin-bottom: 18px; 
+                color: #333; 
+                font-size: 1.6rem; 
+                padding-right: 50px;
+            ">
                 <i class="fas fa-calendar-alt" style="color: #8B1C2A;"></i> Horario
             </h3>
+            
             <div id="horario-container">
                 <p>Cargando horario...</p>
             </div>
+            
             <div style="margin-top: 20px; display: flex; justify-content: flex-end;">
-                <button class="btn-secondary" onclick="cerrarHorarioModal()" style="padding: 10px 25px;">
+                <button onclick="cerrarHorarioModal()" style="
+                    background: #8B1C2A;
+                    color: white;
+                    border: none;
+                    padding: 12px 30px;
+                    border-radius: 8px;
+                    cursor: pointer;
+                    transition: background 0.3s, transform 0.2s;
+                    font-size: 1rem;
+                " 
+                onmouseover="this.style.background='#6B1520'; this.style.transform='scale(1.02)'"
+                onmouseout="this.style.background='#8B1C2A'; this.style.transform='scale(1)'">
                     <i class="fas fa-times"></i> Cerrar
                 </button>
             </div>

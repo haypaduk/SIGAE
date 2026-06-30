@@ -155,11 +155,19 @@ def api_dashboard_stats():
 
 @app.route('/api/infraestructura/edificios', methods=['GET'])
 def api_edificios():
-    """Lista de edificios"""
-    edificios = execute_query(
-        "SELECT id_edificio, nombre, tipo_edificio FROM edificios WHERE activo = 1",
-        fetch_all=True
-    )
+    """Lista de edificios con total de aulas"""
+    edificios = execute_query("""
+        SELECT 
+            e.id_edificio, 
+            e.nombre, 
+            e.tipo_edificio,
+            COUNT(a.id_aula) as total_aulas
+        FROM edificios e
+        LEFT JOIN aulas a ON e.id_edificio = a.id_edificio AND a.activo = 1
+        WHERE e.activo = 1
+        GROUP BY e.id_edificio
+        ORDER BY e.nombre
+    """, fetch_all=True)
     return jsonify(edificios), 200
 
 @app.route('/api/infraestructura/edificios/<int:edificio_id>/aulas', methods=['GET'])
@@ -243,12 +251,13 @@ def api_create_carrera():
 def api_update_carrera(id_carrera):
     """Actualizar una carrera"""
     data = request.get_json()
+    clave = data.get('clave_carrera')
     nombre = data.get('nombre_carrera')
     activo = data.get('activo', 1)
     
     execute_query(
-        "UPDATE carreras SET nombre_carrera = %s, activo = %s WHERE id_carrera = %s",
-        (nombre, activo, id_carrera)
+        "UPDATE carreras SET clave_carrera = %s, nombre_carrera = %s, activo = %s WHERE id_carrera = %s",
+        (clave, nombre, activo, id_carrera)
     )
     
     return jsonify({'message': 'Carrera actualizada'}), 200
@@ -804,6 +813,287 @@ def api_get_bloques_reservas():
             bloque['hora_fin'] = str(bloque['hora_fin'])
     
     return jsonify(bloques), 200
+
+# =====================================================
+# API - DATOS DE UN AULA ESPECÍFICA (TABLA DE HORARIOS)
+# =====================================================
+
+@app.route('/api/infraestructura/aula/<int:aula_id>', methods=['GET'])
+def api_get_aula_data(aula_id):
+    """Obtener datos de un aula para el horario"""
+    aula = execute_query("""
+        SELECT 
+            a.id_aula,
+            a.identificador,
+            a.piso,
+            a.capacidad,
+            e.nombre as edificio_nombre,
+            e.id_edificio,
+            c.clave_carrera as carrera_clave,
+            u.nombre_completo as director_nombre
+        FROM aulas a
+        LEFT JOIN edificios e ON a.id_edificio = e.id_edificio
+        LEFT JOIN carreras c ON a.id_carrera_asignada = c.id_carrera
+        LEFT JOIN usuarios u ON u.id_carrera = a.id_carrera_asignada AND u.rol = 'director'
+        WHERE a.id_aula = %s AND a.activo = 1
+    """, (aula_id,), fetch_one=True)
+    
+    if not aula:
+        return jsonify({'error': 'Aula no encontrada'}), 404
+    
+    # Obtener todas las carreras que tienen aulas en este edificio
+    carreras_edificio = execute_query("""
+        SELECT DISTINCT c.clave_carrera, c.nombre_carrera
+        FROM aulas a
+        LEFT JOIN carreras c ON a.id_carrera_asignada = c.id_carrera
+        WHERE a.id_edificio = %s AND a.activo = 1 AND c.clave_carrera IS NOT NULL
+        ORDER BY c.clave_carrera
+    """, (aula['id_edificio'],), fetch_all=True)
+    
+    aula['carreras_edificio'] = [c['clave_carrera'] for c in carreras_edificio]
+    
+    return jsonify(aula), 200
+
+#=====================================================
+# API - DETALLE DE UN EDIFICIO CON SUS AULAS Y ESTADÍSTICAS
+#=====================================================
+
+@app.route('/api/infraestructura/edificio/<int:edificio_id>/detalle', methods=['GET'])
+def api_edificio_detalle(edificio_id):
+    """Obtener detalle de un edificio con sus aulas"""
+    
+    # Obtener información del edificio
+    edificio = execute_query(
+        "SELECT id_edificio, nombre FROM edificios WHERE id_edificio = %s AND activo = 1",
+        (edificio_id,),
+        fetch_one=True
+    )
+    
+    if not edificio:
+        return jsonify({'error': 'Edificio no encontrado'}), 404
+    
+    # Obtener aulas del edificio con ocupación
+    aulas = execute_query("""
+        SELECT 
+            a.id_aula,
+            a.identificador,
+            a.piso,
+            a.capacidad,
+            t.nombre_tipo as tipo,
+            COUNT(r.id_reserva) as reservas_count,
+            ROUND(
+                (COUNT(r.id_reserva) * 100.0) / 
+                ((SELECT COUNT(*) FROM bloques_horarios) * 5)
+            ) as porcentaje_ocupacion
+        FROM aulas a
+        LEFT JOIN tipos_aula t ON a.id_tipo_aula = t.id_tipo_aula
+        LEFT JOIN reservas r ON a.id_aula = r.id_aula 
+            AND r.estado = 'activa'
+            AND YEARWEEK(r.fecha_asignacion) = YEARWEEK(CURDATE())
+        WHERE a.id_edificio = %s AND a.activo = 1
+        GROUP BY a.id_aula
+        ORDER BY a.piso DESC, a.identificador
+    """, (edificio_id,), fetch_all=True)
+    
+    # Calcular estadísticas
+    total_aulas = len(aulas)
+    libres = 0
+    parciales = 0
+    ocupados = 0
+    
+    for aula in aulas:
+        porcentaje = aula.get('porcentaje_ocupacion', 0)
+        if porcentaje < 20:
+            libres += 1
+        elif porcentaje < 80:
+            parciales += 1
+        else:
+            ocupados += 1
+    
+    return jsonify({
+        'edificio_nombre': edificio['nombre'],
+        'edificio_id': edificio['id_edificio'],
+        'total_aulas': total_aulas,
+        'libres': libres,
+        'parciales': parciales,
+        'ocupados': ocupados,
+        'aulas': aulas
+    }), 200
+
+# =====================================================
+# ADMIN - PÁGINA DE USUARIOS (DIRECTORES)
+# =====================================================
+
+@app.route('/admin/directores')
+def admin_directores():
+    """Gestión de directores"""
+    return render_template('admin/directores.html')
+
+# =====================================================
+# API - USUARIOS (Admin)
+# =====================================================
+
+@app.route('/api/admin/directores', methods=['GET'])
+def api_get_directores():
+    """Obtener todos los usuarios (directores y admin)"""
+    usuarios = execute_query("""
+        SELECT u.id_usuario, u.email, u.nombre_completo, u.rol, u.activo, u.foto_perfil,
+               GROUP_CONCAT(c.clave_carrera SEPARATOR ', ') as carreras
+        FROM usuarios u
+        LEFT JOIN usuarios_carreras uc ON u.id_usuario = uc.id_usuario
+        LEFT JOIN carreras c ON uc.id_carrera = c.id_carrera
+        WHERE u.rol = 'director' OR u.rol = 'admin'
+        GROUP BY u.id_usuario
+        ORDER BY u.nombre_completo
+    """, fetch_all=True)
+    return jsonify(usuarios), 200
+
+@app.route('/api/admin/directores', methods=['POST'])
+def api_create_director():
+    """Crear un nuevo usuario (director)"""
+    data = request.get_json()
+    email = data.get('email')
+    password = data.get('password')
+    nombre_completo = data.get('nombre_completo')
+    rol = data.get('rol', 'director')
+    carreras_ids = data.get('carreras', [])
+    
+    if not email or not password or not nombre_completo:
+        return jsonify({'error': 'Todos los campos son requeridos'}), 400
+    
+    # Verificar si el correo ya existe
+    existente = execute_query(
+        "SELECT id_usuario FROM usuarios WHERE email = %s",
+        (email,),
+        fetch_one=True
+    )
+    if existente:
+        return jsonify({'error': 'El correo ya está registrado'}), 400
+    
+    # Crear usuario (contraseña sin encriptar por ahora)
+    usuario_id = execute_query("""
+        INSERT INTO usuarios (email, password, nombre_completo, rol, activo, foto_perfil)
+        VALUES (%s, %s, %s, %s, 1, '/img/avatar.png')
+    """, (email, password, nombre_completo, rol))
+    
+    if not usuario_id:
+        return jsonify({'error': 'Error al crear usuario'}), 500
+    
+    # Asignar carreras
+    if carreras_ids and rol == 'director':
+        for id_carrera in carreras_ids:
+            execute_query("""
+                INSERT INTO usuarios_carreras (id_usuario, id_carrera)
+                VALUES (%s, %s)
+            """, (usuario_id, id_carrera))
+    
+    # Devolver el id del usuario creado
+    return jsonify({
+        'message': 'Usuario creado exitosamente',
+        'id': usuario_id  # ← ESTO ES LO QUE FALTABA
+    }), 201
+
+@app.route('/api/admin/directores/<int:id_usuario>', methods=['PUT'])
+def api_update_director(id_usuario):
+    """Actualizar un usuario"""
+    data = request.get_json()
+    nombre_completo = data.get('nombre_completo')
+    email = data.get('email')
+    activo = data.get('activo', 1)
+    carreras_ids = data.get('carreras', [])
+    
+    # Actualizar datos básicos
+    execute_query("""
+        UPDATE usuarios 
+        SET nombre_completo = %s, email = %s, activo = %s
+        WHERE id_usuario = %s
+    """, (nombre_completo, email, activo, id_usuario))
+    
+    # Actualizar carreras (eliminar todas y volver a insertar)
+    execute_query("DELETE FROM usuarios_carreras WHERE id_usuario = %s", (id_usuario,))
+    
+    for id_carrera in carreras_ids:
+        execute_query("""
+            INSERT INTO usuarios_carreras (id_usuario, id_carrera)
+            VALUES (%s, %s)
+        """, (id_usuario, id_carrera))
+    
+    return jsonify({'message': 'Usuario actualizado'}), 200
+
+@app.route('/api/admin/directores/<int:id_usuario>', methods=['DELETE'])
+def api_delete_director(id_usuario):
+    """Eliminar un usuario"""
+    execute_query("DELETE FROM usuarios_carreras WHERE id_usuario = %s", (id_usuario,))
+    execute_query("DELETE FROM usuarios WHERE id_usuario = %s", (id_usuario,))
+    return jsonify({'message': 'Usuario eliminado'}), 200
+
+@app.route('/api/admin/selects/directores', methods=['GET'])
+def api_get_selects_directores():
+    """Obtener datos para selects (carreras)"""
+    carreras = execute_query(
+        "SELECT id_carrera, clave_carrera, nombre_carrera FROM carreras WHERE activo = 1 ORDER BY nombre_carrera",
+        fetch_all=True
+    )
+    return jsonify({'carreras': carreras}), 200
+
+# =====================================================
+# API - SUBIR FOTO DE PERFIL
+# =====================================================
+
+@app.route('/api/admin/upload-foto', methods=['POST'])
+def api_upload_foto():
+    """Subir foto de perfil para un director"""
+    
+    # Verificar que haya un archivo
+    if 'foto' not in request.files:
+        return jsonify({'error': 'No se envió ninguna foto'}), 400
+    
+    file = request.files['foto']
+    
+    if file.filename == '':
+        return jsonify({'error': 'No se seleccionó ningún archivo'}), 400
+    
+    # Verificar extensión
+    extensiones_permitidas = {'jpg', 'jpeg', 'png', 'gif', 'webp'}
+    if '.' not in file.filename or file.filename.rsplit('.', 1)[1].lower() not in extensiones_permitidas:
+        return jsonify({'error': 'Formato no permitido. Use JPG, PNG, GIF o WEBP'}), 400
+    
+    # Generar nombre único
+    from datetime import datetime
+    import uuid
+    
+    extension = file.filename.rsplit('.', 1)[1].lower()
+    nombre_archivo = f"{datetime.now().strftime('%Y%m%d_%H%M%S')}_{uuid.uuid4().hex[:8]}.{extension}"
+    
+    # Ruta donde se guardará
+    ruta_relativa = f"img/directores/{nombre_archivo}"
+    ruta_completa = os.path.join('..', 'frontend', ruta_relativa)
+    
+    # Crear carpeta si no existe
+    os.makedirs(os.path.dirname(ruta_completa), exist_ok=True)
+    
+    # Guardar archivo
+    file.save(ruta_completa)
+    
+    return jsonify({
+        'message': 'Foto subida exitosamente',
+        'foto_perfil': f"/{ruta_relativa}"
+    }), 200
+
+# =====================================================
+# API - ACTUALIZAR FOTO DE PERFIL DE UN DIRECTOR
+# ====================================================
+@app.route('/api/admin/directores/<int:id_usuario>/foto', methods=['PUT'])
+def api_update_director_foto(id_usuario):
+    """Actualizar la foto de perfil de un director"""
+    data = request.get_json()
+    foto_perfil = data.get('foto_perfil')
+    
+    execute_query("""
+        UPDATE usuarios SET foto_perfil = %s WHERE id_usuario = %s
+    """, (foto_perfil, id_usuario))
+    
+    return jsonify({'message': 'Foto actualizada'}), 200
 
 # =====================================================
 # INICIAR APLICACIÓN

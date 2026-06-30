@@ -106,7 +106,7 @@ function editarMateria(id) {
     document.getElementById('modal-title').textContent = 'Editar Materia';
     document.getElementById('materia-id').value = materia.id_materia;
     document.getElementById('materia-clave').value = materia.clave;
-    document.getElementById('materia-clave').readOnly = true;
+    // document.getElementById('materia-clave').readOnly = true; -- Eliminado para permitir edición de clave
     document.getElementById('materia-nombre').value = materia.nombre;
     document.getElementById('materia-carrera').value = materia.id_carrera || '';
     document.getElementById('materia-activo').value = materia.activo;

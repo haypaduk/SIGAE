@@ -1,12 +1,13 @@
 /**
  * SIGAE - LÓGICA DE INFRAESTRUCTURA
  * Archivo: frontend/js/infraestructura.js
- * 
- * Funciones específicas para la página de infraestructura:
- * - Cargar edificios desde el servidor
- * - Cargar aulas de un edificio al hacer clic
- * - Ver horario de un aula
  */
+
+let edificiosData = [];
+let aulasData = [];
+let edificioSeleccionado = null;
+let filtroActual = 'todas';
+let estadoActual = 'todos';
 
 // =====================================================
 // CARGAR EDIFICIOS
@@ -14,26 +15,42 @@
 async function cargarEdificios() {
     try {
         const res = await fetch('/api/infraestructura/edificios');
-        const edificios = await res.json();
+        edificiosData = await res.json();
         
         const container = document.getElementById('edificios-container');
         
-        if (!edificios || edificios.length === 0) {
+        if (!edificiosData || edificiosData.length === 0) {
             container.innerHTML = '<p>No hay edificios registrados</p>';
             return;
         }
         
+        // Mostrar estadísticas de edificios (totales)
+        const totalEdificios = edificiosData.length;
+        const totalAulas = edificiosData.reduce((sum, e) => sum + (e.total_aulas || 0), 0);
+        
         container.innerHTML = `
-            <div class="grid-edificios">
-                ${edificios.map(e => `
-                    <div class="edificio-card" onclick="cargarAulas(${e.id_edificio}, '${e.nombre}')">
-                        <h3><i class="fas fa-building" style="color: #8B1C2A; margin-right: 8px;"></i>${e.nombre}</h3>
-                        <p class="tipo"><i class="fas fa-tag" style="margin-right: 5px;"></i>${e.tipo_edificio}</p>
-                        <p class="click-hint"><i class="fas fa-hand-pointer" style="margin-right: 5px;"></i>Haz clic para ver aulas</p>
+            <div class="edificios-header">
+                <div class="edificios-stats">
+                    <span class="stat"><strong>${totalEdificios}</strong> edificios</span>
+                    <span class="stat"><strong>${totalAulas}</strong> aulas totales</span>
+                </div>
+            </div>
+            <div class="edificios-grid">
+                ${edificiosData.map(e => `
+                    <div class="edificio-card ${edificioSeleccionado === e.id_edificio ? 'active' : ''}" 
+                         data-id="${e.id_edificio}"
+                         onclick="seleccionarEdificio(${e.id_edificio})">
+                        <div class="edificio-nombre"><i class="fas fa-building" style="color: #8B1C2A; margin-right: 6px;"></i>${e.nombre}</div>
+                        <div class="edificio-espacios">${e.total_aulas || 0} espacios</div>
                     </div>
                 `).join('')}
             </div>
         `;
+        
+        // Si hay edificios y no hay uno seleccionado, seleccionar el primero
+        if (edificiosData.length > 0 && !edificioSeleccionado) {
+            seleccionarEdificio(edificiosData[0].id_edificio);
+        }
         
     } catch (error) {
         console.error('Error cargando edificios:', error);
@@ -43,72 +60,215 @@ async function cargarEdificios() {
 }
 
 // =====================================================
-// CARGAR AULAS DE UN EDIFICIO
+// SELECCIONAR EDIFICIO
 // =====================================================
-async function cargarAulas(edificioId, edificioNombre) {
-    try {
-        // Mostrar sección de aulas
-        const container = document.getElementById('aulas-container');
-        container.innerHTML = `
-            <h3><i class="fas fa-building" style="color: #8B1C2A; margin-right: 8px;"></i> ${edificioNombre} - Aulas</h3>
-            <button class="btn-volver" onclick="volverAEdificios()">
-                <i class="fas fa-arrow-left" style="margin-right: 5px;"></i> Volver a edificios
-            </button>
-            <div class="grid-aulas" id="aulas-grid">
-                <p>Cargando aulas...</p>
-            </div>
-        `;
-        
-        const res = await fetch(`/api/infraestructura/edificios/${edificioId}/aulas`);
-        const aulas = await res.json();
-        
-        const grid = document.getElementById('aulas-grid');
-        
-        if (!aulas || aulas.length === 0) {
-            grid.innerHTML = '<p>No hay aulas en este edificio</p>';
-            return;
+async function seleccionarEdificio(edificioId) {
+    edificioSeleccionado = edificioId;
+    
+    // Actualizar la lista de edificios (resaltar el seleccionado)
+    const cards = document.querySelectorAll('.edificio-card');
+    cards.forEach(card => {
+        card.classList.remove('active');
+        if (card.dataset.id == edificioId) {
+            card.classList.add('active');
         }
+    });
+    
+    // Obtener datos completos del edificio
+    try {
+        const res = await fetch(`/api/infraestructura/edificio/${edificioId}/detalle`);
+        const data = await res.json();
         
-        grid.innerHTML = aulas.map(aula => {
-            const porcentaje = aula.porcentaje_ocupacion || 0;
-            let clasePorcentaje = 'baja';
-            if (porcentaje >= 80) clasePorcentaje = 'alta';
-            else if (porcentaje >= 50) clasePorcentaje = 'media';
-            
-            // Icono según el tipo de aula
-            let iconoTipo = 'fa-chalkboard'; // Aula
-            if (aula.tipo === 'Auditorio') iconoTipo = 'fa-users';
-            else if (aula.tipo === 'Laboratorio') iconoTipo = 'fa-flask';
-            
-            return `
-                <div class="aula-card">
-                    <div class="header">
-                        <h4><i class="fas ${iconoTipo}" style="color: #8B1C2A; margin-right: 8px;"></i>${aula.identificador}</h4>
-                        <span class="porcentaje ${clasePorcentaje}">${porcentaje}%</span>
-                    </div>
-                    <p class="detalles"><i class="fas fa-layer-group" style="margin-right: 5px;"></i>${aula.piso} · <i class="fas fa-users" style="margin-right: 5px;"></i>${aula.capacidad} lugares</p>
-                    <p class="tipo-aula"><i class="fas fa-tag" style="margin-right: 5px;"></i>${aula.tipo || 'Aula'} ${aula.carrera ? '· ' + aula.carrera : ''}</p>
-                    <button class="btn-ver-horario" onclick="verHorario(${aula.id_aula})">
-                        <i class="fas fa-calendar-alt" style="margin-right: 5px;"></i> Ver horario
-                    </button>
-                </div>
-            `;
-        }).join('');
+        // Guardar aulas
+        aulasData = data.aulas || [];
+        
+        // Mostrar resumen y aulas
+        mostrarResumen(data);
+        mostrarAulas(aulasData);
         
     } catch (error) {
         console.error('Error cargando aulas:', error);
         document.getElementById('aulas-container').innerHTML = 
-            '<p style="color: red;">❌ Error al cargar aulas</p>';
+            '<p style="color: red;">❌ Error al cargar las aulas</p>';
     }
 }
 
 // =====================================================
-// VOLVER A EDIFICIOS
+// MOSTRAR RESUMEN DEL EDIFICIO
 // =====================================================
-function volverAEdificios() {
-    document.getElementById('aulas-container').innerHTML = '';
-    // Recargar edificios para refrescar
-    cargarEdificios();
+function mostrarResumen(data) {
+    const container = document.getElementById('aulas-container');
+    if (!container) return;
+    
+    const total = data.total_aulas || 0;
+    const libres = data.libres || 0;
+    const parciales = data.parciales || 0;
+    const ocupados = data.ocupados || 0;
+    
+    let html = `
+        <div class="edificio-resumen">
+            <div class="resumen-header">
+                <h3><i class="fas fa-building"></i> ${data.edificio_nombre}</h3>
+                <div class="resumen-stats">
+                    <span class="stat-total">${total} espacios</span>
+                </div>
+            </div>
+            <div class="resumen-estados">
+                <span class="estado-libre"><span class="dot green"></span> ${libres} libres</span>
+                <span class="estado-parcial"><span class="dot orange"></span> ${parciales} parciales</span>
+                <span class="estado-ocupado"><span class="dot red"></span> ${ocupados} ocupados</span>
+            </div>
+        </div>
+    `;
+    
+    // Agregar filtros
+    html += `
+        <div class="filtros-container">
+            <button class="filtro-btn ${filtroActual === 'todas' ? 'active' : ''}" onclick="aplicarFiltro('todas')">
+                <i class="fas fa-layer-group"></i> Todas las plantas
+            </button>
+            <button class="filtro-btn ${filtroActual === 'baja' ? 'active' : ''}" onclick="aplicarFiltro('baja')">
+                <i class="fas fa-arrow-down"></i> Planta Baja
+            </button>
+            <button class="filtro-btn ${filtroActual === 'alta' ? 'active' : ''}" onclick="aplicarFiltro('alta')">
+                <i class="fas fa-arrow-up"></i> Planta Alta
+            </button>
+            <span class="filtro-separador">|</span>
+            <button class="filtro-btn ${estadoActual === 'todos' ? 'active' : ''}" onclick="aplicarEstado('todos')">
+                <i class="fas fa-check-circle"></i> Todos
+            </button>
+            <button class="filtro-btn ${estadoActual === 'libre' ? 'active' : ''}" onclick="aplicarEstado('libre')">
+                <i class="fas fa-circle" style="color: #2ecc71;"></i> Libre
+            </button>
+            <button class="filtro-btn ${estadoActual === 'parcial' ? 'active' : ''}" onclick="aplicarEstado('parcial')">
+                <i class="fas fa-circle" style="color: #f39c12;"></i> Parcial
+            </button>
+            <button class="filtro-btn ${estadoActual === 'ocupado' ? 'active' : ''}" onclick="aplicarEstado('ocupado')">
+                <i class="fas fa-circle" style="color: #e74c3c;"></i> Ocupado
+            </button>
+        </div>
+    `;
+    
+    // Agregar contenedor de aulas
+    html += `<div id="aulas-grid"></div>`;
+    
+    container.innerHTML = html;
+}
+
+// =====================================================
+// MOSTRAR AULAS (con filtros)
+// =====================================================
+function mostrarAulas(aulas) {
+    const grid = document.getElementById('aulas-grid');
+    if (!grid) return;
+    
+    // Aplicar filtros
+    let aulasFiltradas = [...aulas];
+    
+    // Filtro por planta
+    if (filtroActual === 'baja') {
+        aulasFiltradas = aulasFiltradas.filter(a => a.piso === 'Planta Baja');
+    } else if (filtroActual === 'alta') {
+        aulasFiltradas = aulasFiltradas.filter(a => a.piso === 'Planta Alta');
+    }
+    
+    // Filtro por estado
+    if (estadoActual === 'libre') {
+        aulasFiltradas = aulasFiltradas.filter(a => a.porcentaje_ocupacion === 0 || a.porcentaje_ocupacion < 20);
+    } else if (estadoActual === 'parcial') {
+        aulasFiltradas = aulasFiltradas.filter(a => a.porcentaje_ocupacion >= 20 && a.porcentaje_ocupacion < 80);
+    } else if (estadoActual === 'ocupado') {
+        aulasFiltradas = aulasFiltradas.filter(a => a.porcentaje_ocupacion >= 80);
+    }
+    
+    if (!aulasFiltradas || aulasFiltradas.length === 0) {
+        grid.innerHTML = '<p class="no-aulas">No hay aulas que coincidan con los filtros seleccionados.</p>';
+        return;
+    }
+    
+    grid.innerHTML = aulasFiltradas.map(aula => {
+        const porcentaje = aula.porcentaje_ocupacion || 0;
+        let estado = 'libre';
+        let estadoLabel = 'Disponible';
+        if (porcentaje >= 80) {
+            estado = 'ocupado';
+            estadoLabel = 'Alta Demanda';
+        } else if (porcentaje >= 20) {
+            estado = 'parcial';
+            estadoLabel = 'Uso Parcial';
+        }
+        
+        const iconoTipo = aula.tipo === 'Auditorio' ? 'fa-users' : 
+                         aula.tipo === 'Laboratorio' ? 'fa-flask' : 'fa-chalkboard';
+        
+        return `
+            <div class="aula-item ${estado}" data-id="${aula.id_aula}">
+                <div class="aula-header">
+                    <span class="aula-nombre"><i class="fas ${iconoTipo}"></i> ${aula.identificador}</span>
+                    <span class="aula-porcentaje ${estado}">${porcentaje}%</span>
+                </div>
+                <div class="aula-detalles">
+                    <span class="aula-capacidad"><i class="fas fa-users"></i> ${aula.capacidad} lug.</span>
+                    <span class="aula-estado ${estado}">${estadoLabel}</span>
+                </div>
+                <div class="aula-piso">
+                    <i class="fas fa-layer-group"></i> ${aula.piso}
+                </div>
+                <button class="btn-ver-horario" onclick="verHorario(${aula.id_aula})">
+                    <i class="fas fa-calendar-alt"></i> Ver horario
+                </button>
+            </div>
+        `;
+    }).join('');
+}
+
+// =====================================================
+// FILTROS
+// =====================================================
+function aplicarFiltro(filtro) {
+    filtroActual = filtro;
+    
+    // Actualizar botones
+    document.querySelectorAll('.filtro-btn').forEach(btn => {
+        if (btn.textContent.includes('Todas') || btn.textContent.includes('Planta')) {
+            btn.classList.remove('active');
+        }
+    });
+    const btns = document.querySelectorAll('.filtro-btn');
+    const indices = {
+        'todas': 0,
+        'baja': 1,
+        'alta': 2
+    };
+    if (indices[filtro] !== undefined) {
+        btns[indices[filtro]]?.classList.add('active');
+    }
+    
+    mostrarAulas(aulasData);
+}
+
+function aplicarEstado(estado) {
+    estadoActual = estado;
+    
+    // Actualizar botones de estado
+    document.querySelectorAll('.filtro-btn').forEach(btn => {
+        if (btn.textContent.includes('Todos') || btn.textContent.includes('Libre') || 
+            btn.textContent.includes('Parcial') || btn.textContent.includes('Ocupado')) {
+            btn.classList.remove('active');
+        }
+    });
+    const btns = document.querySelectorAll('.filtro-btn');
+    const indices = {
+        'todos': 3,
+        'libre': 4,
+        'parcial': 5,
+        'ocupado': 6
+    };
+    if (indices[estado] !== undefined) {
+        btns[indices[estado]]?.classList.add('active');
+    }
+    
+    mostrarAulas(aulasData);
 }
 
 // =====================================================
@@ -117,13 +277,10 @@ function volverAEdificios() {
 function verHorario(aulaId) {
     console.log('📅 Ver horario del aula ID:', aulaId);
     
-    // Cargar datos para reservas (materias, profesores, días, bloques)
     cargarDatosReservas().then(() => {
-        // Cargar el horario del aula
         cargarHorario(aulaId);
     });
     
-    // Abrir el modal de horario
     document.getElementById('horarioModal').classList.add('active');
 }
 

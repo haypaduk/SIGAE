@@ -141,10 +141,10 @@
 }
 
 /* =====================================================
-   MODAL DE HORARIO
+   MODAL DE HORARIO - VERSIÓN SIMPLE (SIN SCROLL DOBLE)
    ===================================================== */
 #horarioModal .modal-content {
-    max-width: 950px !important;
+    max-width: 1200px !important;
     padding: 25px 30px !important;
     max-height: 90vh !important;
     overflow-y: auto !important;
@@ -286,7 +286,492 @@
 }
 
 /* =====================================================
-   RESPONSIVE PARA HORARIO
+   HORARIO - ENCABEZADO MEJORADO
+   ===================================================== */
+.horario-header {
+    margin-bottom: 15px;
+    padding-bottom: 15px;
+    border-bottom: 2px solid #f0f0f0;
+}
+
+.horario-titulo-aula h2 {
+    margin: 0;
+    font-size: 1.5rem;
+    color: #333;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.horario-titulo-aula h2 i {
+    color: #8B1C2A;
+}
+
+.horario-titulo-aula p {
+    margin: 5px 0 0 0;
+    color: #666;
+    font-size: 0.9rem;
+    display: flex;
+    gap: 15px;
+}
+
+.horario-subtitulo h4 {
+    margin: 5px 0 0 0;
+    color: #888;
+    font-size: 0.95rem;
+    font-weight: 400;
+}
+
+/* =====================================================
+   HORARIO - TURNOS Y RESUMEN
+   ===================================================== */
+.horario-info {
+    background: #f8f9fa;
+    border-radius: 8px;
+    padding: 12px 16px;
+    margin-bottom: 15px;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+}
+
+.horario-turnos {
+    display: flex;
+    gap: 15px;
+}
+
+.turno {
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.turno:hover {
+    transform: scale(1.05);
+}
+
+.turno-activo {
+    box-shadow: 0 0 0 2px #8B1C2A;
+    font-weight: 700;
+}
+
+.turno-matutino {
+    background: #fff3cd;
+    color: #856404;
+}
+
+.turno-matutino.turno-activo {
+    background: #ffc107;
+    color: #333;
+}
+
+.turno-vespertino {
+    background: #e2e3e5;
+    color: #383d41;
+}
+
+.turno-vespertino.turno-activo {
+    background: #6c757d;
+    color: white;
+}
+
+.horario-resumen {
+    display: flex;
+    gap: 15px;
+    align-items: center;
+    font-size: 0.85rem;
+    color: #555;
+}
+
+.horario-resumen .resumen-bloques {
+    font-weight: 500;
+}
+
+.horario-resumen .resumen-turno {
+    color: #8B1C2A;
+    font-weight: 500;
+}
+
+.horario-resumen .resumen-director {
+    color: #666;
+    font-size: 0.8rem;
+}
+
+.horario-resumen .resumen-director i {
+    color: #8B1C2A;
+}
+
+/* =====================================================
+   HORARIO - LEYENDA
+   ===================================================== */
+.horario-leyenda {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid #eee;
+}
+
+.leyenda-label {
+    font-size: 0.85rem;
+    color: #666;
+    font-weight: 500;
+    margin-right: 5px;
+}
+
+.leyenda-item {
+    padding: 2px 10px;
+    background: #f0f0f0;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #555;
+}
+
+.horario-mensaje {
+    margin-top: 10px;
+    text-align: center;
+    font-size: 0.85rem;
+    color: #666;
+}
+
+/* =====================================================
+   MODAL - BOTÓN CERRAR (X)
+   ===================================================== */
+.modal-close-btn {
+    position: absolute;
+    top: 12px;
+    right: 18px;
+    background: none;
+    border: none;
+    font-size: 1.8rem;
+    cursor: pointer;
+    color: #999;
+    transition: color 0.3s, transform 0.2s;
+    padding: 0 5px;
+    line-height: 1;
+}
+
+.modal-close-btn:hover {
+    color: #333;
+    transform: scale(1.1);
+}
+
+/* =====================================================
+   INFRAESTRUCTURA - NUEVO DISEÑO
+   ===================================================== */
+
+/* Edificios grid */
+.edificios-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 12px;
+    margin-top: 10px;
+}
+
+.edificio-card {
+    background: white;
+    padding: 15px;
+    border-radius: 10px;
+    cursor: pointer;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    transition: all 0.3s;
+    text-align: center;
+    border: 3px solid transparent;
+}
+
+.edificio-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+}
+
+.edificio-card.active {
+    border-color: #8B1C2A;
+    background: #fdf0f0;
+}
+
+.edificio-nombre {
+    font-weight: 600;
+    color: #333;
+    font-size: 0.95rem;
+}
+
+.edificio-espacios {
+    font-size: 0.8rem;
+    color: #999;
+    margin-top: 5px;
+}
+
+/* Resumen del edificio */
+.edificio-resumen {
+    background: white;
+    border-radius: 10px;
+    padding: 15px 20px;
+    margin-bottom: 15px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+}
+
+.resumen-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.resumen-header h3 {
+    margin: 0;
+    font-size: 1.2rem;
+    color: #333;
+}
+
+.resumen-header h3 i {
+    color: #8B1C2A;
+    margin-right: 8px;
+}
+
+.resumen-stats {
+    display: flex;
+    gap: 15px;
+}
+
+.stat-total {
+    font-weight: 600;
+    color: #333;
+}
+
+.resumen-estados {
+    display: flex;
+    gap: 20px;
+    font-size: 0.85rem;
+}
+
+.resumen-estados span {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    color: #555;
+}
+
+.dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    display: inline-block;
+}
+
+.dot.green { background: #2ecc71; }
+.dot.orange { background: #f39c12; }
+.dot.red { background: #e74c3c; }
+
+/* Filtros */
+.filtros-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 15px;
+    padding: 10px 0;
+    border-bottom: 1px solid #eee;
+}
+
+.filtro-btn {
+    padding: 6px 14px;
+    border: 1px solid #ddd;
+    border-radius: 20px;
+    background: white;
+    cursor: pointer;
+    font-size: 0.8rem;
+    transition: all 0.3s;
+    color: #555;
+}
+
+.filtro-btn:hover {
+    border-color: #8B1C2A;
+    color: #333;
+}
+
+.filtro-btn.active {
+    background: #8B1C2A;
+    color: white;
+    border-color: #8B1C2A;
+}
+
+.filtro-btn i {
+    margin-right: 4px;
+}
+
+.filtro-separador {
+    color: #ddd;
+    padding: 0 5px;
+}
+
+/* Aulas grid */
+#aulas-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 15px;
+    margin-top: 10px;
+}
+
+.aula-item {
+    background: white;
+    border-radius: 10px;
+    padding: 15px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    border-left: 4px solid #2ecc71;
+    transition: transform 0.2s;
+}
+
+.aula-item:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+
+.aula-item.parcial {
+    border-left-color: #f39c12;
+}
+
+.aula-item.ocupado {
+    border-left-color: #e74c3c;
+}
+
+.aula-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.aula-nombre {
+    font-weight: 600;
+    color: #333;
+    font-size: 1rem;
+}
+
+.aula-nombre i {
+    color: #8B1C2A;
+    margin-right: 6px;
+}
+
+.aula-porcentaje {
+    font-weight: 700;
+    font-size: 1.1rem;
+}
+
+.aula-porcentaje.libre { color: #2ecc71; }
+.aula-porcentaje.parcial { color: #f39c12; }
+.aula-porcentaje.ocupado { color: #e74c3c; }
+
+.aula-detalles {
+    display: flex;
+    gap: 12px;
+    font-size: 0.8rem;
+    color: #666;
+    margin-bottom: 5px;
+}
+
+.aula-detalles i {
+    margin-right: 3px;
+}
+
+.aula-estado {
+    font-weight: 500;
+}
+
+.aula-estado.libre { color: #2ecc71; }
+.aula-estado.parcial { color: #f39c12; }
+.aula-estado.ocupado { color: #e74c3c; }
+
+.aula-piso {
+    font-size: 0.75rem;
+    color: #999;
+    margin-bottom: 10px;
+}
+
+.aula-piso i {
+    margin-right: 4px;
+}
+
+.aula-item .btn-ver-horario {
+    width: 100%;
+    padding: 6px;
+    font-size: 0.8rem;
+}
+
+.no-aulas {
+    text-align: center;
+    padding: 40px;
+    color: #999;
+    grid-column: 1 / -1;
+}
+
+/* =====================================================
+   EDIFICIOS - HEADER CON ESTADÍSTICAS
+   ===================================================== */
+.edificios-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+    padding: 10px 0;
+    border-bottom: 1px solid #eee;
+}
+
+.edificios-stats {
+    display: flex;
+    gap: 20px;
+    font-size: 0.9rem;
+    color: #666;
+}
+
+.edificios-stats .stat {
+    color: #555;
+}
+
+.edificios-stats .stat strong {
+    color: #333;
+    font-size: 1.1rem;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .edificios-grid {
+        grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    }
+    
+    #aulas-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .resumen-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 5px;
+    }
+    
+    .resumen-estados {
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+    
+    .filtros-container {
+        gap: 5px;
+    }
+    
+    .filtro-btn {
+        font-size: 0.7rem;
+        padding: 4px 10px;
+    }
+}
+
+/* =====================================================
+   RESPONSIVE
    ===================================================== */
 @media (max-width: 768px) {
     .horario-table {
