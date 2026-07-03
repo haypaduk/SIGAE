@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Solicitudes - SIGAE</title>
+    <link rel="stylesheet" href="/css/main.css">
+    <link rel="stylesheet" href="/css/admin.css">
+    <link rel="stylesheet" href="/css/solicitudes.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+</head>
+<body>
+    <div class="dashboard-wrapper">
+        <!-- Top Bar -->
+        <div class="top-bar">
+            <div class="top-bar-left">
+                <div class="top-bar-logos">
+                    <img src="/frontend/img/rectoria_cortada.jpg" alt="Logo UTVT" class="logo">
+                    <span class="separator"></span>
+                    <img src="/frontend/img/utvt_logo.jpg" alt="Logo SIGAE" class="logo">
+                </div>
+                <div class="top-bar-text">
+                    <div class="titulo">UTVT · SISTEMA DE GESTIÓN</div>
+                    <div class="subtitulo">SIGAE</div>
+                </div>
+            </div>
+            <div class="top-bar-right">
+                <div class="notifications" id="notifications">
+                    <i class="fas fa-bell"></i>
+                    <span class="notifications-badge" id="notif-count">0</span>
+                </div>
+                <div class="user-info">
+                    <div class="user-avatar" id="user-avatar"></div>
+                    <div class="user-name" id="user-name">Cargando...</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="dashboard-body">
+            <!-- Sidebar -->
+            <div class="sidebar">
+                <div class="sidebar-header">
+                    <h2><i class="fas fa-cubes"></i> SIGAE</h2>
+                    <p><i class="fas fa-door-open"></i> Gestión de Aulas</p>
+                </div>
+                <ul class="sidebar-menu">
+                    <li><a href="/dashboard"><i class="fas fa-chart-pie"></i> Dashboard</a></li>
+                    <li><a href="/infraestructura"><i class="fas fa-building"></i> Infraestructura</a></li>
+                    <li class="active"><a href="/solicitudes"><i class="fas fa-file-alt"></i> Solicitudes</a></li>
+                    <li><a href="/reportes"><i class="fas fa-chart-bar"></i> Reportes</a></li>
+                    <li><a href="#" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Cerrar Sesión</a></li>
+                </ul>
+            </div>
+
+            <div class="main-content">
+                <div class="solicitudes-container">
+                    <div class="solicitudes-header">
+                        <h2><i class="fas fa-file-alt"></i> Solicitudes de Espacios</h2>
+                        <button class="btn-crear-solicitud" onclick="abrirModalCrear()">
+                            <i class="fas fa-plus"></i> Solicitar Espacio
+                        </button>
+                    </div>
+
+                    <div id="solicitudes-list">
+                        <div class="empty-state">
+                            <i class="fas fa-inbox"></i>
+                            <p>Cargando solicitudes...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================================= -->
+    <!-- MODAL SOLICITAR ESPACIO (ACTUALIZADO)         -->
+    <!-- ============================================= -->
+    <div class="modal" id="solicitudModal">
+        <div class="modal-content" style="max-width: 550px;">
+            <h3><i class="fas fa-pencil-alt"></i> Solicitar Espacio Externo</h3>
+            <form id="solicitudForm">
+                <div class="form-group">
+                    <label for="solicitud-edificio">Edificio</label>
+                    <select id="solicitud-edificio" required>
+                        <option value="">Seleccionar edificio</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="solicitud-aula">Espacio</label>
+                    <select id="solicitud-aula" required>
+                        <option value="">Seleccionar espacio...</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="solicitud-dia">Día</label>
+                    <select id="solicitud-dia" required>
+                        <option value="">Seleccionar día</option>
+                        <option value="1">Lunes</option>
+                        <option value="2">Martes</option>
+                        <option value="3">Miércoles</option>
+                        <option value="4">Jueves</option>
+                        <option value="5">Viernes</option>
+                        <option value="6">Sábado</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="solicitud-turno">Turno</label>
+                    <select id="solicitud-turno" required>
+                        <option value="">Seleccionar turno</option>
+                        <option value="1">Matutino (07:00 - 15:20)</option>
+                        <option value="2">Vespertino (15:20 - 21:10)</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="solicitud-bloque">Bloque horario</label>
+                    <select id="solicitud-bloque" required>
+                        <option value="">Seleccionar bloque</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="solicitud-motivo">Justificación</label>
+                    <textarea id="solicitud-motivo" rows="4" placeholder="Describe la razón de la solicitud del espacio externo..." required></textarea>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn-secondary" onclick="cerrarModal()">Cancelar</button>
+                    <button type="submit" class="btn-primary">Enviar Solicitud</button>
+                </div>
+            </form>
+        </div>
+    </div>    
+
+    <script src="/js/main.js"></script>
+    <script src="/js/admin/utils.js"></script>
+    <script src="/js/solicitudes.js"></script>
+</body>
+</html>

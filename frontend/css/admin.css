@@ -1,10 +1,6 @@
 /**
  * SIGAE - ESTILOS DE ADMINISTRACIÓN
  * Archivo: frontend/css/admin.css
- * 
- * Estilos específicos para el panel de administración:
- * - Grid de tarjetas (admin.html)
- * - CRUD de carreras (carreras.html)
  */
 
 /* =====================================================
@@ -53,7 +49,7 @@
 }
 
 /* =====================================================
-   ADMIN - CRUD DE CARRERAS
+   ADMIN - CONTENEDOR
    ===================================================== */
 .admin-container {
     padding: 20px;
@@ -168,7 +164,7 @@
 }
 
 /* =====================================================
-   ADMIN - MODAL
+   ADMIN - MODAL (UNIFICADO)
    ===================================================== */
 .modal {
     display: none;
@@ -180,11 +176,11 @@
     background: rgba(0,0,0,0.5);
     justify-content: center;
     align-items: center;
-    z-index: 1000;
+    z-index: 99999;
 }
 
 .modal.active {
-    display: flex;
+    display: flex !important;
 }
 
 .modal-content {
@@ -193,6 +189,9 @@
     padding: 30px;
     max-width: 500px;
     width: 90%;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.3);
 }
 
 .modal-content h3 {
@@ -225,6 +224,104 @@
     gap: 10px;
     margin-top: 20px;
     justify-content: flex-end;
+}
+
+/* =====================================================
+   SOLICITUDES - MODAL ESPECÍFICO (SOLO PARA SOLICITUDES)
+   ===================================================== */
+#solicitudModal {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    background: rgba(0,0,0,0.6) !important;
+    justify-content: center !important;
+    align-items: center !important;
+    z-index: 99999 !important;
+    display: none !important;
+}
+
+#solicitudModal.active {
+    display: flex !important;
+}
+
+#solicitudModal .modal-content {
+    background: white !important;
+    border-radius: 10px !important;
+    padding: 25px !important;
+    max-width: 550px !important;
+    width: 90% !important;
+    max-height: 90vh !important;
+    overflow-y: auto !important;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.3) !important;
+    position: relative !important;
+    z-index: 100000 !important;
+}
+
+/* =====================================================
+   ADMIN - MODAL COMPACTO
+   ===================================================== */
+.modal-content.compact {
+    padding: 18px 22px !important;
+    max-width: 450px !important;
+    max-height: 90vh !important;
+    overflow-y: auto !important;
+}
+
+.modal-content.compact h3 {
+    font-size: 1.2rem !important;
+    margin-bottom: 12px !important;
+}
+
+.modal-content.compact .form-group {
+    margin-bottom: 8px !important;
+}
+
+.modal-content.compact .form-group label {
+    font-size: 0.85rem !important;
+    font-weight: 500 !important;
+}
+
+.modal-content.compact .form-group input,
+.modal-content.compact .form-group select {
+    padding: 6px 10px !important;
+    font-size: 0.9rem !important;
+}
+
+.modal-content.compact .form-group small {
+    font-size: 0.7rem !important;
+    color: #999;
+    display: block;
+    margin-top: 2px;
+}
+
+.modal-content.compact .modal-actions {
+    margin-top: 12px !important;
+}
+
+.modal-content.compact .modal-actions button {
+    padding: 6px 16px !important;
+    font-size: 0.9rem !important;
+}
+
+/* Scroll del modal compacto */
+.modal-content.compact::-webkit-scrollbar {
+    width: 6px;
+}
+
+.modal-content.compact::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 10px;
+}
+
+.modal-content.compact::-webkit-scrollbar-thumb {
+    background: #ccc;
+    border-radius: 10px;
+}
+
+.modal-content.compact::-webkit-scrollbar-thumb:hover {
+    background: #aaa;
 }
 
 /* =====================================================
@@ -363,82 +460,7 @@
 }
 
 /* =====================================================
-   ADMIN - MODAL COMPACTO (para aulas y otros)
-   ===================================================== */
-
-/* Modal más compacto */
-.modal-content.compact {
-    padding: 18px 22px !important;
-    max-width: 450px !important;
-    max-height: 90vh !important;
-    overflow-y: auto !important;
-}
-
-.modal-content.compact h3 {
-    font-size: 1.2rem !important;
-    margin-bottom: 12px !important;
-}
-
-.modal-content.compact .form-group {
-    margin-bottom: 8px !important;
-}
-
-.modal-content.compact .form-group label {
-    font-size: 0.85rem !important;
-    font-weight: 500 !important;
-}
-
-.modal-content.compact .form-group input,
-.modal-content.compact .form-group select {
-    padding: 6px 10px !important;
-    font-size: 0.9rem !important;
-}
-
-.modal-content.compact .form-group small {
-    font-size: 0.7rem !important;
-    color: #999;
-    display: block;
-    margin-top: 2px;
-}
-
-.modal-content.compact .modal-actions {
-    margin-top: 12px !important;
-}
-
-.modal-content.compact .modal-actions button {
-    padding: 6px 16px !important;
-    font-size: 0.9rem !important;
-}
-
-/* Scroll del modal compacto */
-.modal-content.compact::-webkit-scrollbar {
-    width: 6px;
-}
-
-.modal-content.compact::-webkit-scrollbar-track {
-    background: #f1f1f1;
-    border-radius: 10px;
-}
-
-.modal-content.compact::-webkit-scrollbar-thumb {
-    background: #ccc;
-    border-radius: 10px;
-}
-
-.modal-content.compact::-webkit-scrollbar-thumb:hover {
-    background: #aaa;
-}
-
-/* Responsive para modal compacto */
-@media (max-width: 768px) {
-    .modal-content.compact {
-        max-width: 95% !important;
-        padding: 15px !important;
-    }
-}
-
-/* =====================================================
-   ADMIN - RESPONSIVE
+   RESPONSIVE
    ===================================================== */
 @media (max-width: 768px) {
     .toast {
@@ -457,5 +479,10 @@
         flex-direction: column;
         gap: 15px;
         align-items: flex-start;
+    }
+    
+    .modal-content.compact {
+        max-width: 95% !important;
+        padding: 15px !important;
     }
 }

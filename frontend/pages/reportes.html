@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reportes - SIGAE</title>
+    <link rel="stylesheet" href="/css/main.css">
+    <link rel="stylesheet" href="/css/reportes.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <!-- Chart.js para gráficas -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div class="dashboard-wrapper">
+        <!-- Top Bar -->
+        <div class="top-bar">
+            <div class="top-bar-left">
+                <div class="top-bar-logos">
+                    <img src="/frontend/img/rectoria_cortada.jpg" alt="Logo UTVT" class="logo">
+                    <span class="separator"></span>
+                    <img src="/frontend/img/utvt_logo.jpg" alt="Logo SIGAE" class="logo">
+                </div>
+                <div class="top-bar-text">
+                    <div class="titulo">UTVT · SISTEMA DE GESTIÓN</div>
+                    <div class="subtitulo">SIGAE</div>
+                </div>
+            </div>
+            <div class="top-bar-right">
+                <div class="notifications" id="notifications">
+                    <i class="fas fa-bell"></i>
+                    <span class="notifications-badge" id="notif-count">0</span>
+                </div>
+                <div class="user-info">
+                    <div class="user-avatar" id="user-avatar"></div>
+                    <div class="user-name" id="user-name">Cargando...</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="dashboard-body">
+            <!-- Sidebar -->
+            <div class="sidebar">
+                <div class="sidebar-header">
+                    <h2><i class="fas fa-cubes"></i> SIGAE</h2>
+                    <p><i class="fas fa-door-open"></i> Gestión de Aulas</p>
+                </div>
+                <ul class="sidebar-menu">
+                    <li><a href="/dashboard"><i class="fas fa-chart-pie"></i> Dashboard</a></li>
+                    <li><a href="/infraestructura"><i class="fas fa-building"></i> Infraestructura</a></li>
+                    <li><a href="/solicitudes"><i class="fas fa-file-alt"></i> Solicitudes</a></li>
+                    <li class="active"><a href="/reportes"><i class="fas fa-chart-bar"></i> Reportes</a></li>
+                    <li><a href="#" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Cerrar Sesión</a></li>
+                </ul>
+            </div>
+
+            <div class="main-content">
+                <div class="reportes-container">
+                    <div class="reportes-header">
+                        <h2><i class="fas fa-chart-bar"></i> Reportes y Análisis</h2>
+                        <p id="reporte-header" style="color: #666; margin-top: 5px;">
+                            Ciclo Cuatrimestral <span id="ciclo-actual-text">2026-A</span> - Generado el <span id="fecha-reporte"></span>
+                        </p>
+                    </div>
+                                
+                    <!-- ============================================= -->
+                    <!-- GRÁFICAS EN DOS COLUMNAS                      -->
+                    <!-- ============================================= -->
+                    <div class="reportes-grid">
+                        <!-- OCUPACIÓN POR TURNO -->
+                        <div class="reporte-card">
+                            <h3><i class="fas fa-clock"></i> Ocupación por Turno</h3>
+                            <p style="color: #999; font-size: 0.8rem; margin-bottom: 12px;">Comparativa matutino vs. vespertino por edificio</p>
+                            <div class="chart-container">
+                                <canvas id="chartOcupacionTurno"></canvas>
+                            </div>
+                        </div>
+
+                        <!-- TIPOS DE ESPACIO -->
+                        <div class="reporte-card">
+                            <h3><i class="fas fa-th-large"></i> Tipos de Espacio</h3>
+                            <p style="color: #999; font-size: 0.8rem; margin-bottom: 12px;">Distribución del inventario total de espacios</p>
+                            <div class="chart-container-small">
+                                <canvas id="chartTiposEspacio"></canvas>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ===== INVENTARIO DE INFRAESTRUCTURA ===== -->
+                    <div class="reporte-card">
+                        <h3><i class="fas fa-table"></i> Inventario de Infraestructura</h3>
+                        <p style="color: #999; font-size: 0.85rem; margin-bottom: 15px;">Resumen completo por edificio</p>
+                        <div class="table-container">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>EDIFICIO</th>
+                                        <th>TOTAL ESPACIOS</th>
+                                        <th>PLANTA BAJA</th>
+                                        <th>PLANTA ALTA</th>
+                                        <th>CAPACIDAD TOTAL</th>
+                                        <th>DISPONIBLES</th>
+                                        <th>OCUPACIÓN PROM.</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="inventario-table">
+                                    <tr>
+                                        <td colspan="7" style="text-align:center;">Cargando datos...</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/js/main.js"></script>
+    <script src="/js/admin/utils.js"></script>
+    <script src="/js/reportes.js"></script>
+</body>
+</html>

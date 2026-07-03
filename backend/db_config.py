@@ -626,7 +626,6 @@ def get_ocupacion_edificios_admin():
         cursor.close()
         conn.close()
 
-
 def get_ocupacion_edificios_director(id_carrera):
     """Ocupación por edificio (DIRECTOR - ve solo su carrera)"""
     conn = get_db_connection()
@@ -664,3 +663,96 @@ def get_ocupacion_edificios_director(id_carrera):
     finally:
         cursor.close()
         conn.close()
+
+# =====================================================
+# REPORTES - OCUPACIÓN POR TURNO
+# =====================================================
+
+def get_ocupacion_por_turno():
+    """Obtener ocupación por turno para cada edificio"""
+    conn = get_db_connection()
+    if not conn:
+        return []
+    
+    cursor = conn.cursor(dictionary=True)
+    
+    # Obtener ocupación por edificio y turno
+    cursor.execute("""
+        SELECT 
+            e.nombre as edificio,
+            t.nombre_turno as turno,
+            COUNT(DISTINCT a.id_aula) as total_aulas,
+            COUNT(DISTINCT CASE 
+                WHEN r.id_reserva IS NOT NULL 
+                AND r.estado = 'activa'
+                AND YEARWEEK(r.fecha_asignacion) = YEARWEEK(CURDATE())
+                THEN a.id_aula 
+            END) as aulas_ocupadas,
+            ROUND(
+                (COUNT(DISTINCT CASE 
+                    WHEN r.id_reserva IS NOT NULL 
+                    AND r.estado = 'activa'
+                    AND YEARWEEK(r.fecha_asignacion) = YEARWEEK(CURDATE())
+                    THEN a.id_aula 
+                END) * 100.0) / COUNT(DISTINCT a.id_aula)
+            ) as porcentaje
+        FROM edificios e
+        JOIN aulas a ON e.id_edificio = a.id_edificio
+        CROSS JOIN turnos t
+        LEFT JOIN reservas r ON r.id_aula = a.id_aula
+            AND r.id_bloque IN (SELECT id_bloque FROM bloques_horarios WHERE id_turno = t.id_turno)
+            AND r.estado = 'activa'
+            AND YEARWEEK(r.fecha_asignacion) = YEARWEEK(CURDATE())
+        WHERE e.activo = 1 AND a.activo = 1
+        GROUP BY e.id_edificio, t.id_turno
+        ORDER BY e.nombre
+    """)
+    
+    resultados = cursor.fetchall()
+    cursor.close()
+    conn.close()
+    
+    return resultados
+
+
+def get_tipos_espacio():
+    """Obtener distribución de tipos de espacio"""
+    conn = get_db_connection()
+    if not conn:
+        return []
+    
+    cursor = conn.cursor(dictionary=True)
+    
+    cursor.execute("""
+        SELECT 
+            t.nombre_tipo as tipo,
+            COUNT(a.id_aula) as cantidad
+        FROM aulas a
+        JOIN tipos_aula t ON a.id_tipo_aula = t.id_tipo_aula
+        WHERE a.activo = 1
+        GROUP BY t.id_tipo_aula
+        ORDER BY cantidad DESC
+    """)
+    
+    resultados = cursor.fetchall()
+    cursor.close()
+    conn.close()
+    
+    return resultados
+
+# =====================================================
+# CICLO CUATRIMESTRAL - DETECCIÓN AUTOMÁTICA
+# =====================================================
+
+def get_ciclo_actual():
+    from datetime import datetime
+    hoy = datetime.now()
+    año = hoy.year
+    mes = hoy.month
+    
+    if 1 <= mes <= 4:
+        return f"{año}-A"
+    elif 5 <= mes <= 8:
+        return f"{año}-B"
+    else:
+        return f"{año}-C"

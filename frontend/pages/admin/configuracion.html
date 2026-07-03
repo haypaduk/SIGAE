@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Configuración - SIGAE</title>
+    <link rel="stylesheet" href="/css/main.css">
+    <link rel="stylesheet" href="/css/admin.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+</head>
+<body>
+    <div class="dashboard-wrapper">
+        <!-- Top Bar -->
+        <div class="top-bar">
+            <div class="top-bar-left">
+                <div class="top-bar-logos">
+                    <img src="/frontend/img/rectoria_cortada.jpg" alt="Logo UTVT" class="logo">
+                    <span class="separator"></span>
+                    <img src="/frontend/img/utvt_logo.jpg" alt="Logo SIGAE" class="logo">
+                </div>
+                <div class="top-bar-text">
+                    <div class="titulo">UTVT · SISTEMA DE GESTIÓN</div>
+                    <div class="subtitulo">SIGAE</div>
+                </div>
+            </div>
+            <div class="top-bar-right">
+                <div class="user-info">
+                    <div class="user-avatar" id="user-avatar"></div>
+                    <div class="user-name" id="user-name">Cargando...</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="dashboard-body">
+            <!-- Sidebar -->
+            <div class="sidebar">
+                <div class="sidebar-header">
+                    <h2><i class="fas fa-cubes"></i> SIGAE</h2>
+                    <p><i class="fas fa-door-open"></i> Gestión de Aulas</p>
+                </div>
+                <ul class="sidebar-menu">
+                    <li><a href="/dashboard"><i class="fas fa-chart-pie"></i> Dashboard</a></li>
+                    <li><a href="/infraestructura"><i class="fas fa-building"></i> Infraestructura</a></li>
+                    <li><a href="/solicitudes"><i class="fas fa-file-alt"></i> Solicitudes</a></li>
+                    <li><a href="/reportes"><i class="fas fa-chart-bar"></i> Reportes</a></li>
+                    <li class="active"><a href="/admin/configuracion"><i class="fas fa-cogs"></i> Administración</a></li>
+                    <li><a href="#" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Cerrar Sesión</a></li>
+                </ul>
+            </div>
+
+            <div class="main-content">
+                <div class="admin-container">
+                    <a href="/admin" class="btn-back">
+                        <i class="fas fa-arrow-left"></i> Volver al panel de administración
+                    </a>
+                    
+                    <div class="admin-header">
+                        <h2><i class="fas fa-cog"></i> Configuración del Sistema</h2>
+                    </div>
+
+                    <div class="table-container">
+                        <form id="configForm">
+                            <div class="form-group">
+                                <label for="ciclo-actual">Ciclo Cuatrimestral</label>
+                                <select id="ciclo-actual" class="form-control">
+                                    <option value="2025-A">2025-A</option>
+                                    <option value="2025-B">2025-B</option>
+                                    <option value="2025-C">2025-C</option>
+                                    <option value="2026-A">2026-A</option>
+                                    <option value="2026-B">2026-B</option>
+                                    <option value="2026-C">2026-C</option>
+                                    <option value="2027-A">2027-A</option>
+                                    <option value="2027-B">2027-B</option>
+                                    <option value="2027-C">2027-C</option>
+                                </select>
+                                <small style="color: #999; font-size: 0.7rem;">Selecciona el ciclo cuatrimestral actual</small>
+                            </div>
+                            <div class="modal-actions" style="margin-top: 20px;">
+                                <button type="submit" class="btn-primary">Guardar Cambios</button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <div style="margin-top: 30px;">
+                        <h3><i class="fas fa-info-circle"></i> Información del Sistema</h3>
+                        <div class="table-container">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Clave</th>
+                                        <th>Valor</th>
+                                        <th>Descripción</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="config-table">
+                                    <tr>
+                                        <td colspan="3" style="text-align:center;">Cargando configuración...</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/js/main.js"></script>
+    <script src="/js/admin/utils.js"></script>
+    <script>
+        // =====================================================
+        // CARGAR CONFIGURACIÓN
+        // =====================================================
+        async function cargarConfiguracion() {
+            try {
+                const res = await fetch('/api/config/ciclo');
+                const data = await res.json();
+                
+                if (data.ciclo) {
+                    document.getElementById('ciclo-actual').value = data.ciclo;
+                }
+                
+                // Mostrar configuración en la tabla
+                const tbody = document.getElementById('config-table');
+                tbody.innerHTML = `
+                    <tr>
+                        <td><strong>ciclo_actual</strong></td>
+                        <td>${data.ciclo || 'No definido'}</td>
+                        <td>Ciclo cuatrimestral actual</td>
+                    </tr>
+                    <tr>
+                        <td><strong>fecha_generacion</strong></td>
+                        <td>${data.fecha || new Date().toLocaleDateString('es-MX')}</td>
+                        <td>Fecha de generación de reportes</td>
+                    </tr>
+                `;
+            } catch (error) {
+                console.error('Error cargando configuración:', error);
+                document.getElementById('config-table').innerHTML = `
+                    <tr>
+                        <td colspan="3" style="text-align:center;color:red;">Error al cargar configuración</td>
+                    </tr>
+                `;
+            }
+        }
+
+        // =====================================================
+        // ACTUALIZAR CICLO
+        // =====================================================
+        document.getElementById('configForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const ciclo = document.getElementById('ciclo-actual').value;
+            
+            try {
+                const res = await fetch('/api/config/ciclo', {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ ciclo })
+                });
+                
+                if (res.ok) {
+                    showToast('Ciclo actualizado correctamente', 'success');
+                    cargarConfiguracion();
+                } else {
+                    const error = await res.json();
+                    showToast(error.error || 'Error al actualizar', 'error');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                showToast('Error de conexión', 'error');
+            }
+        });
+
+        // =====================================================
+        // INICIALIZAR
+        // =====================================================
+        document.addEventListener('DOMContentLoaded', function() {
+            mostrarUsuario();
+            cargarConfiguracion();
+        });
+    </script>
+</body>
+</html>

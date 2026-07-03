@@ -7,6 +7,7 @@ from flask import Flask, render_template, send_from_directory, request, jsonify,
 from flask_cors import CORS
 import os
 import re
+from datetime import datetime, date
 
 # Importar configuración y base de datos
 from config import config
@@ -658,6 +659,8 @@ def api_get_reservas_semana(aula_id):
             r.fecha_asignacion,
             r.grupo,
             r.estado,
+            r.tipo_reserva,
+            r.evento_nombre,
             m.id_materia,
             m.nombre as materia_nombre,
             m.clave as materia_clave,
@@ -666,12 +669,14 @@ def api_get_reservas_semana(aula_id):
             p.clave as profesor_clave,
             d.nombre_dia,
             b.hora_inicio,
-            b.hora_fin
+            b.hora_fin,
+            u.nombre_completo as solicitante_nombre
         FROM reservas r
         LEFT JOIN materias m ON r.id_materia = m.id_materia
         LEFT JOIN profesores p ON r.id_profesor = p.id_profesor
         JOIN dias_semana d ON r.id_dia = d.id_dia
         JOIN bloques_horarios b ON r.id_bloque = b.id_bloque
+        LEFT JOIN usuarios u ON r.id_usuario = u.id_usuario
         WHERE r.id_aula = %s
         AND r.estado = 'activa'
         AND YEARWEEK(r.fecha_asignacion) = YEARWEEK(CURDATE())
@@ -1094,6 +1099,214 @@ def api_update_director_foto(id_usuario):
     """, (foto_perfil, id_usuario))
     
     return jsonify({'message': 'Foto actualizada'}), 200
+
+# =====================================================
+# API - SOLICITUDES (EVENTOS)
+# =====================================================
+
+@app.route('/api/solicitudes', methods=['GET'])
+def api_get_solicitudes():
+    """Obtener todas las solicitudes"""
+    solicitudes = execute_query("""
+        SELECT 
+            s.*,
+            a.identificador as aula_nombre,
+            e.nombre as edificio_nombre,
+            sol.nombre_completo as solicitante_nombre,
+            dest.nombre_completo as destinatario_nombre,
+            t.nombre_turno,
+            u.foto_perfil as solicitante_foto
+        FROM solicitudes s
+        JOIN aulas a ON s.id_aula = a.id_aula
+        JOIN edificios e ON a.id_edificio = e.id_edificio
+        JOIN usuarios sol ON s.id_solicitante = sol.id_usuario
+        JOIN usuarios dest ON s.id_destinatario = dest.id_usuario
+        JOIN turnos t ON s.id_turno = t.id_turno
+        LEFT JOIN usuarios u ON s.id_solicitante = u.id_usuario
+        ORDER BY s.creado_en DESC
+    """, fetch_all=True)
+    
+    # Formatear fechas
+    for s in solicitudes:
+        if s.get('fecha_solicitud'):
+            s['fecha_solicitud'] = s['fecha_solicitud'].strftime('%d/%m/%Y') if isinstance(s['fecha_solicitud'], date) else str(s['fecha_solicitud'])
+        if s.get('fecha_uso'):
+            s['fecha_uso'] = s['fecha_uso'].strftime('%d/%m/%Y') if isinstance(s['fecha_uso'], date) else str(s['fecha_uso'])
+    
+    return jsonify(solicitudes), 200
+
+@app.route('/api/solicitudes', methods=['POST'])
+def api_create_solicitud():
+    """Crear una nueva solicitud de evento"""
+    data = request.get_json()
+    
+    id_aula = data.get('id_aula')
+    id_dia = data.get('id_dia')
+    id_bloque = data.get('id_bloque')
+    id_turno = data.get('id_turno')
+    motivo = data.get('motivo')
+    id_solicitante = data.get('id_solicitante')
+    
+    if not all([id_aula, id_dia, id_bloque, id_turno, motivo]):
+        return jsonify({'error': 'Todos los campos son requeridos'}), 400
+    
+    if not id_solicitante:
+        return jsonify({'error': 'Usuario no autenticado'}), 401
+    
+    # Obtener el destinatario (dueño del aula) usando la tabla intermedia
+    destinatario = execute_query("""
+        SELECT u.id_usuario 
+        FROM aulas a
+        LEFT JOIN carreras c ON a.id_carrera_asignada = c.id_carrera
+        LEFT JOIN usuarios_carreras uc ON uc.id_carrera = c.id_carrera
+        LEFT JOIN usuarios u ON u.id_usuario = uc.id_usuario
+        WHERE a.id_aula = %s AND u.rol = 'director'
+    """, (id_aula,), fetch_one=True)
+    
+    if not destinatario:
+        return jsonify({'error': 'No se encontró el director responsable del espacio'}), 404
+    
+    fecha_solicitud = date.today()
+    
+    solicitud_id = execute_query("""
+        INSERT INTO solicitudes 
+        (id_aula, id_solicitante, id_destinatario, fecha_solicitud, 
+         id_turno, id_dia, id_bloque, motivo, materia_solicitada, 
+         profesor_solicitado, grupo_solicitado, estado)
+        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, 'pendiente')
+    """, (id_aula, id_solicitante, destinatario['id_usuario'], fecha_solicitud,
+          id_turno, id_dia, id_bloque, motivo, 'Evento', 'Evento', 'General'))
+    
+    if not solicitud_id:
+        return jsonify({'error': 'Error al crear la solicitud'}), 500
+    
+    return jsonify({'message': 'Solicitud de evento creada exitosamente', 'id': solicitud_id}), 201
+
+@app.route('/api/test', methods=['POST'])
+def api_test():
+    return jsonify({'message': 'Test exitoso'}), 200
+
+@app.route('/api/solicitudes/<int:solicitud_id>/responder', methods=['PUT'])
+def api_responder_solicitud(solicitud_id):
+    """Aprobar o rechazar una solicitud de evento"""
+    data = request.get_json()
+    estado = data.get('estado')
+    comentario = data.get('comentario', '')
+    
+    if estado not in ['aprobada', 'rechazada']:
+        return jsonify({'error': 'Estado inválido'}), 400
+    
+    solicitud = execute_query(
+        "SELECT * FROM solicitudes WHERE id_solicitud = %s",
+        (solicitud_id,),
+        fetch_one=True
+    )
+    
+    if not solicitud:
+        return jsonify({'error': 'Solicitud no encontrada'}), 404
+    
+    # Si se aprueba, verificar disponibilidad
+    if estado == 'aprobada':
+        # Verificar si el bloque está ocupado
+        ocupado = execute_query("""
+            SELECT id_reserva FROM reservas 
+            WHERE id_aula = %s AND id_dia = %s AND id_bloque = %s 
+            AND estado = 'activa'
+        """, (solicitud['id_aula'], solicitud['id_dia'], solicitud['id_bloque']), fetch_one=True)
+        
+        if ocupado:
+            return jsonify({'error': 'El bloque horario seleccionado ya está ocupado'}), 400
+    
+    # Actualizar estado
+    execute_query("""
+        UPDATE solicitudes 
+        SET estado = %s, respuesta_comentario = %s, respuesta_fecha = NOW()
+        WHERE id_solicitud = %s
+    """, (estado, comentario, solicitud_id))
+    
+    # Si se aprueba, crear la reserva
+    if estado == 'aprobada':
+        execute_query("""
+            INSERT INTO reservas 
+            (id_aula, id_usuario, id_dia, id_bloque, fecha_reserva, 
+             fecha_asignacion, tipo_reserva, evento_nombre, evento_descripcion, grupo, estado)
+            VALUES (%s, %s, %s, %s, CURDATE(), CURDATE(), 'evento', %s, %s, %s, 'activa')
+        """, (
+            solicitud['id_aula'],
+            solicitud['id_solicitante'],
+            solicitud['id_dia'],
+            solicitud['id_bloque'],
+            solicitud['motivo'],
+            solicitud['motivo'],
+            solicitud['grupo_solicitado'] or 'General'
+        ))
+    
+    return jsonify({'message': f'Solicitud {estado} exitosamente'}), 200
+
+@app.route('/api/solicitudes/pendientes/count', methods=['GET'])
+def api_count_solicitudes_pendientes():
+    """Contar solicitudes pendientes"""
+    usuario_id = 1  # Temporal
+    count = execute_query("""
+        SELECT COUNT(*) as count 
+        FROM solicitudes 
+        WHERE id_destinatario = %s AND estado = 'pendiente'
+    """, (usuario_id,), fetch_one=True)
+    
+    return jsonify({'count': count['count'] if count else 0}), 200
+
+# =====================================================
+# API - REPORTES
+# =====================================================
+
+@app.route('/api/reportes/ocupacion-turno', methods=['GET'])
+def api_reporte_ocupacion_turno():
+    """Obtener datos de ocupación por turno"""
+    from db_config import get_ocupacion_por_turno
+    data = get_ocupacion_por_turno()
+    return jsonify(data), 200
+
+@app.route('/api/reportes/tipos-espacio', methods=['GET'])
+def api_reporte_tipos_espacio():
+    """Obtener distribución de tipos de espacio"""
+    from db_config import get_tipos_espacio
+    data = get_tipos_espacio()
+    return jsonify(data), 200
+
+# =====================================================
+# API - CONFIGURACIÓN
+# =====================================================
+
+def mes_en_espanol(mes_numero):
+    meses = {
+        1: 'enero', 2: 'febrero', 3: 'marzo', 4: 'abril',
+        5: 'mayo', 6: 'junio', 7: 'julio', 8: 'agosto',
+        9: 'septiembre', 10: 'octubre', 11: 'noviembre', 12: 'diciembre'
+    }
+    return meses.get(mes_numero, '')
+
+@app.route('/api/config/ciclo', methods=['GET'])
+def api_get_ciclo():
+    """Obtener el ciclo actual (automático)"""
+    from db_config import get_ciclo_actual
+    from datetime import datetime
+    
+    ciclo = get_ciclo_actual()
+    ahora = datetime.now()
+    mes = ahora.month
+    dia = ahora.day
+    año = ahora.year
+    fecha_actual = f"{dia} de {mes_en_espanol(mes)} de {año}"
+    
+    return jsonify({
+        'ciclo': ciclo,
+        'fecha': fecha_actual
+    }), 200
+
+@app.route('/admin/configuracion')
+def admin_configuracion():
+    """Configuración del sistema"""
+    return render_template('admin/configuracion.html')
 
 # =====================================================
 # INICIAR APLICACIÓN

@@ -98,6 +98,9 @@ async function cargarHorario(aulaId) {
     }
 }
 
+// =====================================================
+// MOSTRAR HORARIO
+// =====================================================
 function mostrarHorario(reservas) {
     const container = document.getElementById('horario-container');
     if (!container) return;
@@ -193,11 +196,34 @@ function mostrarHorario(reservas) {
             const reserva = reservas.find(r => r.id_dia === dia.id_dia && r.id_bloque === bloque.id_bloque);
             
             if (reserva) {
+                // =============================================
+                // DETERMINAR SI ES EVENTO O CLASE
+                // =============================================
+                const esEvento = reserva.tipo_reserva === 'evento';
+                let nombreMostrar = '';
+                let profesorMostrar = '';
+                let grupoMostrar = '';
+                let tooltipText = '';
+                
+                if (esEvento) {
+                    // Si es evento, mostrar el nombre del evento y solicitante
+                    nombreMostrar = reserva.evento_nombre || 'Evento';
+                    profesorMostrar = `📋 Solicitado por: ${reserva.solicitante_nombre || 'Director'}`;
+                    grupoMostrar = reserva.grupo || '';
+                    tooltipText = `${reserva.evento_nombre || 'Evento'}\nSolicitado por: ${reserva.solicitante_nombre || 'Director'}\n${reserva.grupo || ''}`;
+                } else {
+                    // Si es clase normal
+                    nombreMostrar = reserva.materia_nombre || reserva.materia_clave || '';
+                    profesorMostrar = reserva.profesor_nombre || reserva.profesor_clave || '';
+                    grupoMostrar = reserva.grupo || '';
+                    tooltipText = `${reserva.materia_nombre || reserva.materia_clave || ''}\n${reserva.profesor_nombre || reserva.profesor_clave || ''}\n${reserva.grupo || ''}`;
+                }
+                
                 html += `
-                    <td class="ocupado" data-reserva-id="${reserva.id_reserva}">
-                        <div class="materia"><strong>${reserva.materia_nombre || reserva.materia_clave || ''}</strong></div>
-                        <div class="profesor">${reserva.profesor_nombre || reserva.profesor_clave || ''}</div>
-                        <div class="grupo">${reserva.grupo || ''}</div>
+                    <td class="ocupado" data-reserva-id="${reserva.id_reserva}" title="${tooltipText}">
+                        <div class="materia"><strong>${nombreMostrar}</strong></div>
+                        <div class="profesor">${profesorMostrar}</div>
+                        <div class="grupo">${grupoMostrar}</div>
                         <div class="acciones">
                             <button class="btn-sm btn-warning" onclick="editarReserva(${reserva.id_reserva})" title="Editar">
                                 <i class="fas fa-edit"></i>

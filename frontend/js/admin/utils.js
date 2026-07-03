@@ -69,7 +69,7 @@ function showToast(message, type = 'info', title = '') {
 // =====================================================
 // CONFIRMACIÓN PERSONALIZADA
 // =====================================================
-function showConfirm(message, onConfirm, onCancel = null) {
+function showConfirm(message, onConfirm, onCancel = null, btnText = 'Confirmar') {
     // Verificar si ya existe un modal de confirmación
     let confirmModal = document.getElementById('confirmModal');
     
@@ -86,7 +86,7 @@ function showConfirm(message, onConfirm, onCancel = null) {
                 <p id="confirm-message" style="color: #555; margin-bottom: 20px; line-height: 1.5;"></p>
                 <div class="modal-actions" style="justify-content: center;">
                     <button class="btn-secondary" id="confirm-cancel">Cancelar</button>
-                    <button class="btn-danger" id="confirm-ok">Eliminar</button>
+                    <button class="btn-danger" id="confirm-ok">${btnText}</button>
                 </div>
             </div>
         `;
@@ -94,6 +94,7 @@ function showConfirm(message, onConfirm, onCancel = null) {
     }
     
     document.getElementById('confirm-message').textContent = message;
+    document.getElementById('confirm-ok').textContent = btnText;
     confirmModal.classList.add('active');
     
     return new Promise((resolve) => {

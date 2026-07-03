@@ -273,5 +273,121 @@ INSERT INTO bloques_horarios (id_turno, hora_inicio, hora_fin, orden_dia) VALUES
 (2, '20:20:00', '21:10:00', 7);
 
 -- =====================================================
+-- 7. TABLAS ADICIONALES PARA EVENTOS
+-- =====================================================
+
+-- Agregar columnas para eventos en la tabla reservas
+ALTER TABLE reservas ADD COLUMN tipo_reserva ENUM('clase', 'evento') DEFAULT 'clase';
+ALTER TABLE reservas ADD COLUMN evento_nombre VARCHAR(100) NULL;
+ALTER TABLE reservas ADD COLUMN evento_descripcion TEXT NULL;
+
+-- =====================================================
+-- 8. TABLAS ADICIONALES PARA SOLICITUDES
+-- =====================================================
+
+-- Agregar columnas para día y bloque en solicitudes
+ALTER TABLE solicitudes ADD COLUMN id_dia INT NULL;
+ALTER TABLE solicitudes ADD COLUMN id_bloque INT NULL;
+
+-- Agregar llaves foráneas
+ALTER TABLE solicitudes ADD FOREIGN KEY (id_dia) REFERENCES dias_semana(id_dia);
+ALTER TABLE solicitudes ADD FOREIGN KEY (id_bloque) REFERENCES bloques_horarios(id_bloque);
+
+-- =====================================================
 -- FIN DEL SCRIPT DE ESTRUCTURA
 -- =====================================================
+
+
+-- ====================================================
+-- 9. CONSULTAS DE PRUEBA (Ejemplos de uso)
+-- ====================================================
+
+-- Ver todos los directores con sus carreras (usando la tabla intermedia)
+SELECT 
+    u.id_usuario,
+    u.nombre_completo,
+    u.email,
+    u.rol,
+    GROUP_CONCAT(c.clave_carrera ORDER BY c.clave_carrera SEPARATOR ', ') as carreras_asignadas,
+    COUNT(uc.id_carrera) as total_carreras
+FROM usuarios u
+LEFT JOIN usuarios_carreras uc ON u.id_usuario = uc.id_usuario
+LEFT JOIN carreras c ON uc.id_carrera = c.id_carrera
+WHERE u.rol = 'director'
+GROUP BY u.id_usuario
+ORDER BY u.nombre_completo;
+
+-- =====================================================
+-- 10. Consultas de prueba: Ver qué aula pertenece a qué carrera y quién es su director
+-- =====================================================
+
+-- Ver qué aula pertenece a qué carrera y quién es su director
+SELECT 
+    a.id_aula,
+    a.identificador,
+    c.clave_carrera as carrera_aula,
+    c.nombre_carrera,
+    u.id_usuario as director_id,
+    u.nombre_completo as director_nombre,
+    u.email as director_email
+FROM aulas a
+LEFT JOIN carreras c ON a.id_carrera_asignada = c.id_carrera
+LEFT JOIN usuarios_carreras uc ON uc.id_carrera = c.id_carrera
+LEFT JOIN usuarios u ON u.id_usuario = uc.id_usuario AND u.rol = 'director'
+WHERE a.activo = 1
+ORDER BY a.identificador;
+
+-- =====================================================
+-- 11. Consultas de prueba: Ver solicitudes con su destinatario
+-- =====================================================
+
+-- Ver solicitudes con su destinatario
+SELECT 
+    s.id_solicitud,
+    s.fecha_solicitud,
+    a.identificador as aula,
+    sol.nombre_completo as solicitante,
+    dest.nombre_completo as destinatario,
+    s.estado,
+    s.motivo
+FROM solicitudes s
+JOIN aulas a ON s.id_aula = a.id_aula
+JOIN usuarios sol ON s.id_solicitante = sol.id_usuario
+JOIN usuarios dest ON s.id_destinatario = dest.id_usuario
+ORDER BY s.creado_en DESC
+LIMIT 10;
+
+-- =====================================================
+-- 12. Consultas de prueba: Ver reservas de tipo evento
+-- ====================================================
+
+-- Ver reservas de tipo evento
+SELECT 
+    r.id_reserva,
+    a.identificador as aula,
+    d.nombre_dia,
+    b.hora_inicio,
+    b.hora_fin,
+    r.evento_nombre,
+    r.grupo,
+    u.nombre_completo as creador
+FROM reservas r
+JOIN aulas a ON r.id_aula = a.id_aula
+JOIN dias_semana d ON r.id_dia = d.id_dia
+JOIN bloques_horarios b ON r.id_bloque = b.id_bloque
+LEFT JOIN usuarios u ON r.id_usuario = u.id_usuario
+WHERE r.tipo_reserva = 'evento'
+ORDER BY r.creado_en DESC;
+
+-- =====================================================
+-- 13. Ciclos en reportes y modulo de configuracion en administración
+-- =====================================================
+
+-- Crear tabla de configuración
+CREATE TABLE IF NOT EXISTS configuracion (
+    id_config INT PRIMARY KEY AUTO_INCREMENT,
+    clave VARCHAR(50) UNIQUE NOT NULL,
+    valor VARCHAR(100) NOT NULL,
+    descripcion TEXT,
+    actualizado_en TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);

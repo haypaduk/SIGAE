@@ -1,0 +1,190 @@
+/**
+ * SIGAE - ESTILOS DE REPORTES
+ * Archivo: frontend/css/reportes.css
+ */
+
+/* =====================================================
+   CONTENEDOR PRINCIPAL
+   ===================================================== */
+.reportes-container {
+    padding: 20px;
+}
+
+.reportes-header {
+    margin-bottom: 30px;
+}
+
+.reportes-header h2 {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 0;
+}
+
+.reportes-header h2 i {
+    color: #8B1C2A;
+}
+
+/* =====================================================
+   TARJETAS DE REPORTES
+   ===================================================== */
+.reporte-card {
+    background: white;
+    border-radius: 10px;
+    padding: 25px;
+    margin-bottom: 25px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+}
+
+.reporte-card h3 {
+    margin: 0 0 5px 0;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: #333;
+}
+
+.reporte-card h3 i {
+    color: #8B1C2A;
+}
+
+/* =====================================================
+   GRÁFICAS - DOS COLUMNAS
+   ===================================================== */
+.reportes-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 25px;
+    margin-bottom: 25px;
+}
+
+.reportes-grid .reporte-card {
+    margin-bottom: 0;
+}
+
+.chart-container {
+    position: relative;
+    height: 280px;
+    width: 100%;
+}
+
+.chart-container-small {
+    position: relative;
+    height: 280px;
+    width: 100%;
+    max-width: 350px;
+    margin: 0 auto;
+}
+
+/* =====================================================
+   GRÁFICAS - RESPONSIVE
+   ===================================================== */
+@media (max-width: 992px) {
+    .reportes-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .chart-container {
+        height: 250px;
+    }
+    
+    .chart-container-small {
+        height: 250px;
+        max-width: 100%;
+    }
+}
+
+@media (max-width: 768px) {
+    .chart-container {
+        height: 220px;
+    }
+    
+    .chart-container-small {
+        height: 220px;
+    }
+}
+
+/* =====================================================
+   TABLA DE INVENTARIO
+   ===================================================== */
+.table-container {
+    overflow-x: auto;
+}
+
+.table-container table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.85rem;
+}
+
+.table-container th {
+    background: #f5f7fa;
+    color: #333;
+    padding: 12px 15px;
+    text-align: left;
+    border-bottom: 2px solid #ddd;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.table-container td {
+    padding: 10px 15px;
+    border-bottom: 1px solid #eee;
+}
+
+.table-container tr:hover td {
+    background: #f8f9fa;
+}
+
+.table-container .text-center {
+    text-align: center;
+}
+
+.table-container .badge-ocupacion {
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-weight: 600;
+    font-size: 0.75rem;
+}
+
+.badge-baja {
+    background: #d4edda;
+    color: #155724;
+}
+
+.badge-media {
+    background: #fff3cd;
+    color: #856404;
+}
+
+.badge-alta {
+    background: #f8d7da;
+    color: #721c24;
+}
+
+/* =====================================================
+   RESPONSIVE
+   ===================================================== */
+@media (max-width: 768px) {
+    .chart-container {
+        height: 250px;
+    }
+    
+    .chart-container-small {
+        height: 220px;
+        max-width: 100%;
+    }
+    
+    .reporte-card {
+        padding: 15px;
+    }
+    
+    .table-container table {
+        font-size: 0.75rem;
+    }
+    
+    .table-container th,
+    .table-container td {
+        padding: 6px 8px;
+    }
+}

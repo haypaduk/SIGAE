@@ -1,0 +1,278 @@
+/**
+ * SIGAE - ESTILOS DE SOLICITUDES
+ * Archivo: frontend/css/solicitudes.css
+ * 
+ * Estilos específicos para la página de solicitudes:
+ * - Tarjetas de solicitudes
+ * - Estados (pendiente, aprobada, rechazada)
+ * - Botones de acción
+ * - Estado vacío
+ */
+
+/* =====================================================
+   CONTENEDOR PRINCIPAL
+   ===================================================== */
+.solicitudes-container {
+    padding: 20px;
+}
+
+/* =====================================================
+   CABECERA DE SOLICITUDES
+   ===================================================== */
+.solicitudes-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+    gap: 15px;
+}
+
+.solicitudes-header h2 {
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.solicitudes-header h2 i {
+    color: #8B1C2A;
+}
+
+/* =====================================================
+   BOTÓN CREAR SOLICITUD
+   ===================================================== */
+.btn-crear-solicitud {
+    background: #8B1C2A;
+    color: white;
+    border: none;
+    padding: 10px 25px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.95rem;
+    transition: background 0.3s, transform 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.btn-crear-solicitud:hover {
+    background: #6B1520;
+    transform: scale(1.02);
+}
+
+/* =====================================================
+   TARJETA DE SOLICITUD
+   ===================================================== */
+.solicitud-card {
+    background: white;
+    border-radius: 10px;
+    padding: 20px;
+    margin-bottom: 15px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    border-left: 4px solid #f39c12;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.solicitud-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+}
+
+.solicitud-card.aprobada {
+    border-left-color: #27ae60;
+}
+
+.solicitud-card.rechazada {
+    border-left-color: #e74c3c;
+}
+
+/* =====================================================
+   ENCABEZADO DE TARJETA
+   ===================================================== */
+.solicitud-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.solicitante-info {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.solicitante-info .foto-miniatura {
+    width: 35px;
+    height: 35px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid #eee;
+}
+
+.solicitante-info strong {
+    color: #333;
+}
+
+/* =====================================================
+   ESTADO DE SOLICITUD
+   ===================================================== */
+.solicitud-estado {
+    padding: 4px 14px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.estado-pendiente {
+    background: #fff3cd;
+    color: #856404;
+}
+
+.estado-aprobada {
+    background: #d4edda;
+    color: #155724;
+}
+
+.estado-rechazada {
+    background: #f8d7da;
+    color: #721c24;
+}
+
+/* =====================================================
+   CUERPO DE TARJETA
+   ===================================================== */
+.solicitud-body {
+    margin-top: 12px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px 20px;
+}
+
+.solicitud-body .label {
+    color: #999;
+    font-size: 0.8rem;
+}
+
+.solicitud-body .value {
+    font-weight: 500;
+    color: #333;
+}
+
+.solicitud-body .motivo {
+    grid-column: 1 / -1;
+}
+
+/* =====================================================
+   ACCIONES DE TARJETA
+   ===================================================== */
+.solicitud-acciones {
+    margin-top: 15px;
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.btn-approve {
+    background: #27ae60;
+    color: white;
+    border: none;
+    padding: 8px 20px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: background 0.3s, transform 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.btn-approve:hover {
+    background: #219653;
+    transform: scale(1.02);
+}
+
+.btn-reject {
+    background: #e74c3c;
+    color: white;
+    border: none;
+    padding: 8px 20px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: background 0.3s, transform 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.btn-reject:hover {
+    background: #c0392b;
+    transform: scale(1.02);
+}
+
+/* =====================================================
+   ESTADO VACÍO
+   ===================================================== */
+.empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    color: #999;
+}
+
+.empty-state i {
+    font-size: 4rem;
+    color: #ddd;
+    margin-bottom: 15px;
+}
+
+.empty-state p {
+    margin: 5px 0;
+}
+
+.empty-state .sub-text {
+    font-size: 0.85rem;
+    color: #bbb;
+}
+
+/* =====================================================
+   RESPONSIVE
+   ===================================================== */
+@media (max-width: 768px) {
+    .solicitudes-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .solicitud-body {
+        grid-template-columns: 1fr;
+        gap: 4px;
+    }
+    
+    .solicitud-body .motivo {
+        grid-column: 1;
+    }
+    
+    .solicitud-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .solicitud-acciones {
+        width: 100%;
+    }
+    
+    .solicitud-acciones button {
+        flex: 1;
+        justify-content: center;
+    }
+    
+    .btn-crear-solicitud {
+        width: 100%;
+        justify-content: center;
+    }
+}
