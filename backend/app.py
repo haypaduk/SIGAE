@@ -11,7 +11,23 @@ from datetime import datetime, date
 
 # Importar configuración y base de datos
 from config import config
-from db_config import execute_query, get_ocupacion_edificios_admin, get_subutilizadas_admin, get_alta_demanda_admin, get_dashboard_stats_admin
+from db_config import (
+    execute_query,
+    # Dashboard
+    get_dashboard_stats_admin,
+    get_dashboard_stats_director,
+    get_alta_demanda_admin,
+    get_alta_demanda_director,
+    get_subutilizadas_admin,
+    get_subutilizadas_director,
+    get_ocupacion_edificios_admin,
+    get_ocupacion_edificios_director,
+    # Reportes
+    get_ocupacion_por_turno,
+    get_tipos_espacio,
+    # Ciclo
+    get_ciclo_actual
+)
 
 app = Flask(__name__, 
             static_folder='../frontend', 
@@ -130,18 +146,44 @@ def api_login():
 @app.route('/api/dashboard/stats', methods=['GET'])
 def api_dashboard_stats():
     """Estadísticas del dashboard (según rol del usuario)"""
-    # Obtener usuario del token o sesión
-    # Por ahora, simulamos: si es admin, ve todo; si es director, ve su carrera
-    # TODO: Obtener usuario autenticado
+    # Obtener usuario desde el header (enviado desde el frontend)
+    user_id = request.headers.get('X-User-Id', 1)  # Por defecto, admin (id=1)
     
-    # TEMPORAL: Usar admin por defecto
-    # Luego esto se reemplazará con el usuario real de la sesión
+    # Obtener información del usuario
+    user = execute_query(
+        "SELECT id_usuario, rol, id_carrera FROM usuarios WHERE id_usuario = %s",
+        (user_id,),
+        fetch_one=True
+    )
     
-    # Simulación: admin ve todo
-    stats = get_dashboard_stats_admin()
-    alta_demanda = get_alta_demanda_admin()
-    subutilizadas = get_subutilizadas_admin()
-    ocupacion_edificios = get_ocupacion_edificios_admin()
+    if not user:
+        return jsonify({'error': 'Usuario no encontrado'}), 404
+    
+    if user['rol'] == 'admin':
+        # ADMIN: Ver TODO
+        stats = get_dashboard_stats_admin()
+        alta_demanda = get_alta_demanda_admin()
+        subutilizadas = get_subutilizadas_admin()
+        ocupacion_edificios = get_ocupacion_edificios_admin()
+    else:
+        # DIRECTOR: Ver SOLO su carrera
+        if user['id_carrera']:
+            id_carrera = user['id_carrera']
+            stats = get_dashboard_stats_director(id_carrera)
+            alta_demanda = get_alta_demanda_director(id_carrera)
+            subutilizadas = get_subutilizadas_director(id_carrera)
+            ocupacion_edificios = get_ocupacion_edificios_director(id_carrera)
+        else:
+            # Si el director no tiene carrera, mostrar vacío
+            stats = {
+                'total_espacios': 0,
+                'disponibles': 0,
+                'ocupados': 0,
+                'porcentaje_global': 0
+            }
+            alta_demanda = []
+            subutilizadas = []
+            ocupacion_edificios = []
     
     return jsonify({
         'stats': stats,
@@ -156,42 +198,139 @@ def api_dashboard_stats():
 
 @app.route('/api/infraestructura/edificios', methods=['GET'])
 def api_edificios():
-    """Lista de edificios con total de aulas"""
-    edificios = execute_query("""
-        SELECT 
-            e.id_edificio, 
-            e.nombre, 
-            e.tipo_edificio,
-            COUNT(a.id_aula) as total_aulas
-        FROM edificios e
-        LEFT JOIN aulas a ON e.id_edificio = a.id_edificio AND a.activo = 1
-        WHERE e.activo = 1
-        GROUP BY e.id_edificio
-        ORDER BY e.nombre
-    """, fetch_all=True)
+    """Lista de edificios con total de aulas (filtrado por rol)"""
+    
+    # Obtener usuario desde el header
+    user_id = request.headers.get('X-User-Id', 1)
+    
+    # Obtener información del usuario
+    user = execute_query(
+        "SELECT id_usuario, rol, id_carrera FROM usuarios WHERE id_usuario = %s",
+        (user_id,),
+        fetch_one=True
+    )
+    
+    if not user:
+        return jsonify({'error': 'Usuario no encontrado'}), 404
+    
+    if user['rol'] == 'admin':
+        # ADMIN: Ver TODOS los edificios
+        edificios = execute_query("""
+            SELECT 
+                e.id_edificio, 
+                e.nombre, 
+                e.tipo_edificio,
+                COUNT(a.id_aula) as total_aulas
+            FROM edificios e
+            LEFT JOIN aulas a ON e.id_edificio = a.id_edificio AND a.activo = 1
+            WHERE e.activo = 1
+            GROUP BY e.id_edificio
+            ORDER BY e.nombre
+        """, fetch_all=True)
+    else:
+        # DIRECTOR: Ver SOLO los edificios de su(s) carrera(s)
+        # Obtener todas las carreras del director
+        carreras = execute_query("""
+            SELECT c.id_carrera
+            FROM carreras c
+            JOIN usuarios_carreras uc ON c.id_carrera = uc.id_carrera
+            WHERE uc.id_usuario = %s
+        """, (user_id,), fetch_all=True)
+        
+        if not carreras:
+            return jsonify([]), 200
+        
+        # Convertir a lista de IDs
+        carreras_ids = [c['id_carrera'] for c in carreras]
+        carreras_str = ','.join(str(id) for id in carreras_ids)
+        
+        edificios = execute_query(f"""
+            SELECT 
+                e.id_edificio, 
+                e.nombre, 
+                e.tipo_edificio,
+                COUNT(a.id_aula) as total_aulas
+            FROM edificios e
+            LEFT JOIN aulas a ON e.id_edificio = a.id_edificio AND a.activo = 1
+            WHERE e.activo = 1
+            AND a.id_carrera_asignada IN ({carreras_str})
+            GROUP BY e.id_edificio
+            ORDER BY e.nombre
+        """, fetch_all=True)
+    
     return jsonify(edificios), 200
 
 @app.route('/api/infraestructura/edificios/<int:edificio_id>/aulas', methods=['GET'])
 def api_aulas_by_edificio(edificio_id):
-    """Aulas de un edificio"""
-    aulas = execute_query(
-        """SELECT a.id_aula, a.identificador, a.piso, a.capacidad, 
-                  t.nombre_tipo as tipo,
-                  COUNT(r.id_reserva) as reservas_count,
-                  ROUND(
-                      (COUNT(r.id_reserva) * 100.0) / 
-                      ((SELECT COUNT(*) FROM bloques_horarios) * 5)
-                  ) as porcentaje_ocupacion
-           FROM aulas a
-           LEFT JOIN tipos_aula t ON a.id_tipo_aula = t.id_tipo_aula
-           LEFT JOIN reservas r ON a.id_aula = r.id_aula 
-               AND r.estado = 'activa'
-               AND YEARWEEK(r.fecha_asignacion) = YEARWEEK(CURDATE())
-           WHERE a.id_edificio = %s AND a.activo = 1
-           GROUP BY a.id_aula""",
-        (edificio_id,),
-        fetch_all=True
+    """Aulas de un edificio (filtrado por rol)"""
+    
+    # Obtener usuario desde el header
+    user_id = request.headers.get('X-User-Id', 1)
+    
+    # Obtener información del usuario
+    user = execute_query(
+        "SELECT id_usuario, rol, id_carrera FROM usuarios WHERE id_usuario = %s",
+        (user_id,),
+        fetch_one=True
     )
+    
+    if not user:
+        return jsonify({'error': 'Usuario no encontrado'}), 404
+    
+    if user['rol'] == 'admin':
+        # ADMIN: Ver TODAS las aulas del edificio
+        aulas = execute_query("""
+            SELECT a.id_aula, a.identificador, a.piso, a.capacidad, 
+                      t.nombre_tipo as tipo,
+                      COUNT(r.id_reserva) as reservas_count,
+                      ROUND(
+                          (COUNT(r.id_reserva) * 100.0) / 
+                          ((SELECT COUNT(*) FROM bloques_horarios) * 5)
+                      ) as porcentaje_ocupacion
+               FROM aulas a
+               LEFT JOIN tipos_aula t ON a.id_tipo_aula = t.id_tipo_aula
+               LEFT JOIN reservas r ON a.id_aula = r.id_aula 
+                   AND r.estado = 'activa'
+                   AND YEARWEEK(r.fecha_asignacion) = YEARWEEK(CURDATE())
+               WHERE a.id_edificio = %s AND a.activo = 1
+               GROUP BY a.id_aula
+               ORDER BY a.piso DESC, a.identificador
+        """, (edificio_id,), fetch_all=True)
+    else:
+        # DIRECTOR: Ver SOLO las aulas de su(s) carrera(s)
+        # Obtener todas las carreras del director
+        carreras = execute_query("""
+            SELECT c.id_carrera
+            FROM carreras c
+            JOIN usuarios_carreras uc ON c.id_carrera = uc.id_carrera
+            WHERE uc.id_usuario = %s
+        """, (user_id,), fetch_all=True)
+        
+        if not carreras:
+            return jsonify([]), 200
+        
+        carreras_ids = [c['id_carrera'] for c in carreras]
+        carreras_str = ','.join(str(id) for id in carreras_ids)
+        
+        aulas = execute_query(f"""
+            SELECT a.id_aula, a.identificador, a.piso, a.capacidad, 
+                      t.nombre_tipo as tipo,
+                      COUNT(r.id_reserva) as reservas_count,
+                      ROUND(
+                          (COUNT(r.id_reserva) * 100.0) / 
+                          ((SELECT COUNT(*) FROM bloques_horarios) * 5)
+                      ) as porcentaje_ocupacion
+               FROM aulas a
+               LEFT JOIN tipos_aula t ON a.id_tipo_aula = t.id_tipo_aula
+               LEFT JOIN reservas r ON a.id_aula = r.id_aula 
+                   AND r.estado = 'activa'
+                   AND YEARWEEK(r.fecha_asignacion) = YEARWEEK(CURDATE())
+               WHERE a.id_edificio = %s AND a.activo = 1
+               AND a.id_carrera_asignada IN ({carreras_str})
+               GROUP BY a.id_aula
+               ORDER BY a.piso DESC, a.identificador
+        """, (edificio_id,), fetch_all=True)
+    
     return jsonify(aulas), 200
 
 # =====================================================
@@ -649,7 +788,35 @@ def api_delete_profesor(id_profesor):
 
 @app.route('/api/reservas/aula/<int:aula_id>/semana', methods=['GET'])
 def api_get_reservas_semana(aula_id):
-    """Obtener todas las reservas de un aula para la semana actual"""
+    """Obtener todas las reservas de un aula para la semana actual (filtrado por rol)"""
+    
+    # Obtener usuario autenticado
+    user_id = request.headers.get('X-User-Id', 1)
+    
+    user = execute_query(
+        "SELECT id_usuario, rol, id_carrera FROM usuarios WHERE id_usuario = %s",
+        (user_id,),
+        fetch_one=True
+    )
+    
+    if not user:
+        return jsonify({'error': 'Usuario no encontrado'}), 404
+    
+    # Verificar si el director tiene acceso a este aula
+    if user['rol'] == 'director':
+        # Verificar que el aula pertenece a su carrera
+        aula_check = execute_query("""
+            SELECT a.id_aula 
+            FROM aulas a
+            LEFT JOIN carreras c ON a.id_carrera_asignada = c.id_carrera
+            LEFT JOIN usuarios_carreras uc ON uc.id_carrera = c.id_carrera
+            WHERE a.id_aula = %s AND uc.id_usuario = %s
+        """, (aula_id, user['id_usuario']), fetch_one=True)
+        
+        if not aula_check:
+            return jsonify({'error': 'No tienes acceso a este aula'}), 403
+    
+    # Obtener reservas
     reservas = execute_query("""
         SELECT 
             r.id_reserva,
@@ -694,7 +861,7 @@ def api_get_reservas_semana(aula_id):
 
 @app.route('/api/reservas', methods=['POST'])
 def api_create_reserva():
-    """Crear una nueva reserva"""
+    """Crear una nueva reserva (solo si el usuario tiene acceso)"""
     data = request.get_json()
     
     id_aula = data.get('id_aula')
@@ -709,6 +876,18 @@ def api_create_reserva():
     if not all([id_aula, id_dia, id_bloque, id_materia, id_profesor, grupo, fecha_asignacion]):
         return jsonify({'error': 'Todos los campos son requeridos'}), 400
     
+    # Obtener usuario autenticado
+    user_id = request.headers.get('X-User-Id', 1)
+    
+    user = execute_query(
+        "SELECT id_usuario, rol, id_carrera FROM usuarios WHERE id_usuario = %s",
+        (user_id,),
+        fetch_one=True
+    )
+    
+    if not user:
+        return jsonify({'error': 'Usuario no encontrado'}), 404
+    
     # Verificar que el bloque no esté ocupado
     existente = execute_query("""
         SELECT id_reserva FROM reservas 
@@ -719,23 +898,31 @@ def api_create_reserva():
     if existente:
         return jsonify({'error': 'Este horario ya está ocupado'}), 400
     
-    # Obtener usuario de la sesión (por ahora usamos el usuario 1)
-    # TODO: Obtener usuario autenticado
-    id_usuario = 1
+    # Si es director, verificar que el aula pertenece a su carrera
+    if user['rol'] == 'director':
+        aula_check = execute_query("""
+            SELECT a.id_aula 
+            FROM aulas a
+            LEFT JOIN carreras c ON a.id_carrera_asignada = c.id_carrera
+            LEFT JOIN usuarios_carreras uc ON uc.id_carrera = c.id_carrera
+            WHERE a.id_aula = %s AND uc.id_usuario = %s
+        """, (id_aula, user['id_usuario']), fetch_one=True)
+        
+        if not aula_check:
+            return jsonify({'error': 'No tienes permiso para reservar este aula'}), 403
     
     # Crear reserva
     execute_query("""
         INSERT INTO reservas (id_aula, id_usuario, id_dia, id_bloque, 
                             fecha_reserva, fecha_asignacion, id_materia, id_profesor, grupo, estado)
         VALUES (%s, %s, %s, %s, CURDATE(), %s, %s, %s, %s, 'activa')
-    """, (id_aula, id_usuario, id_dia, id_bloque, fecha_asignacion, id_materia, id_profesor, grupo))
+    """, (id_aula, user['id_usuario'], id_dia, id_bloque, fecha_asignacion, id_materia, id_profesor, grupo))
     
     return jsonify({'message': 'Reserva creada exitosamente'}), 201
 
-
 @app.route('/api/reservas/<int:id_reserva>', methods=['PUT'])
 def api_update_reserva(id_reserva):
-    """Actualizar una reserva"""
+    """Actualizar una reserva (solo si es del usuario)"""
     data = request.get_json()
     
     id_materia = data.get('id_materia')
@@ -745,6 +932,19 @@ def api_update_reserva(id_reserva):
     if not all([id_materia, id_profesor, grupo]):
         return jsonify({'error': 'Todos los campos son requeridos'}), 400
     
+    # Obtener usuario autenticado
+    user_id = request.headers.get('X-User-Id', 1)
+    
+    # Verificar que la reserva pertenece al usuario (o es admin)
+    if user_id != 1:  # Si no es admin
+        reserva_check = execute_query("""
+            SELECT id_reserva FROM reservas 
+            WHERE id_reserva = %s AND id_usuario = %s
+        """, (id_reserva, user_id), fetch_one=True)
+        
+        if not reserva_check:
+            return jsonify({'error': 'No tienes permiso para editar esta reserva'}), 403
+    
     execute_query("""
         UPDATE reservas 
         SET id_materia = %s, id_profesor = %s, grupo = %s
@@ -753,16 +953,28 @@ def api_update_reserva(id_reserva):
     
     return jsonify({'message': 'Reserva actualizada'}), 200
 
-
 @app.route('/api/reservas/<int:id_reserva>', methods=['DELETE'])
 def api_delete_reserva(id_reserva):
-    """Eliminar una reserva (cancelar)"""
+    """Eliminar una reserva (solo si es del usuario)"""
+    
+    # Obtener usuario autenticado
+    user_id = request.headers.get('X-User-Id', 1)
+    
+    # Verificar que la reserva pertenece al usuario (o es admin)
+    if user_id != 1:  # Si no es admin
+        reserva_check = execute_query("""
+            SELECT id_reserva FROM reservas 
+            WHERE id_reserva = %s AND id_usuario = %s
+        """, (id_reserva, user_id), fetch_one=True)
+        
+        if not reserva_check:
+            return jsonify({'error': 'No tienes permiso para eliminar esta reserva'}), 403
+    
     execute_query("""
         UPDATE reservas SET estado = 'cancelada' WHERE id_reserva = %s
     """, (id_reserva,))
     
     return jsonify({'message': 'Reserva cancelada'}), 200
-
 
 @app.route('/api/reservas/materias', methods=['GET'])
 def api_get_materias_reservas():
@@ -1106,25 +1318,75 @@ def api_update_director_foto(id_usuario):
 
 @app.route('/api/solicitudes', methods=['GET'])
 def api_get_solicitudes():
-    """Obtener todas las solicitudes"""
-    solicitudes = execute_query("""
-        SELECT 
-            s.*,
-            a.identificador as aula_nombre,
-            e.nombre as edificio_nombre,
-            sol.nombre_completo as solicitante_nombre,
-            dest.nombre_completo as destinatario_nombre,
-            t.nombre_turno,
-            u.foto_perfil as solicitante_foto
-        FROM solicitudes s
-        JOIN aulas a ON s.id_aula = a.id_aula
-        JOIN edificios e ON a.id_edificio = e.id_edificio
-        JOIN usuarios sol ON s.id_solicitante = sol.id_usuario
-        JOIN usuarios dest ON s.id_destinatario = dest.id_usuario
-        JOIN turnos t ON s.id_turno = t.id_turno
-        LEFT JOIN usuarios u ON s.id_solicitante = u.id_usuario
-        ORDER BY s.creado_en DESC
-    """, fetch_all=True)
+    """Obtener todas las solicitudes (filtrado por rol)"""
+    
+    # Obtener usuario autenticado
+    user_id = request.headers.get('X-User-Id', 1)
+    
+    user = execute_query(
+        "SELECT id_usuario, rol, id_carrera FROM usuarios WHERE id_usuario = %s",
+        (user_id,),
+        fetch_one=True
+    )
+    
+    if not user:
+        return jsonify({'error': 'Usuario no encontrado'}), 404
+    
+    if user['rol'] == 'admin':
+        # ADMIN: Ver TODAS las solicitudes
+        solicitudes = execute_query("""
+            SELECT 
+                s.*,
+                a.identificador as aula_nombre,
+                e.nombre as edificio_nombre,
+                sol.nombre_completo as solicitante_nombre,
+                dest.nombre_completo as destinatario_nombre,
+                t.nombre_turno,
+                u.foto_perfil as solicitante_foto
+            FROM solicitudes s
+            JOIN aulas a ON s.id_aula = a.id_aula
+            JOIN edificios e ON a.id_edificio = e.id_edificio
+            JOIN usuarios sol ON s.id_solicitante = sol.id_usuario
+            JOIN usuarios dest ON s.id_destinatario = dest.id_usuario
+            JOIN turnos t ON s.id_turno = t.id_turno
+            LEFT JOIN usuarios u ON s.id_solicitante = u.id_usuario
+            ORDER BY s.creado_en DESC
+        """, fetch_all=True)
+    else:
+        # DIRECTOR: Ver SOLO las solicitudes de su(s) carrera(s)
+        # Obtener carreras del director
+        carreras = execute_query("""
+            SELECT c.id_carrera
+            FROM carreras c
+            JOIN usuarios_carreras uc ON c.id_carrera = uc.id_carrera
+            WHERE uc.id_usuario = %s
+        """, (user_id,), fetch_all=True)
+        
+        if not carreras:
+            return jsonify([]), 200
+        
+        carreras_ids = [c['id_carrera'] for c in carreras]
+        carreras_str = ','.join(str(id) for id in carreras_ids)
+        
+        solicitudes = execute_query(f"""
+            SELECT 
+                s.*,
+                a.identificador as aula_nombre,
+                e.nombre as edificio_nombre,
+                sol.nombre_completo as solicitante_nombre,
+                dest.nombre_completo as destinatario_nombre,
+                t.nombre_turno,
+                u.foto_perfil as solicitante_foto
+            FROM solicitudes s
+            JOIN aulas a ON s.id_aula = a.id_aula
+            JOIN edificios e ON a.id_edificio = e.id_edificio
+            JOIN usuarios sol ON s.id_solicitante = sol.id_usuario
+            JOIN usuarios dest ON s.id_destinatario = dest.id_usuario
+            JOIN turnos t ON s.id_turno = t.id_turno
+            LEFT JOIN usuarios u ON s.id_solicitante = u.id_usuario
+            WHERE a.id_carrera_asignada IN ({carreras_str})
+            ORDER BY s.creado_en DESC
+        """, fetch_all=True)
     
     # Formatear fechas
     for s in solicitudes:
@@ -1245,13 +1507,49 @@ def api_responder_solicitud(solicitud_id):
 
 @app.route('/api/solicitudes/pendientes/count', methods=['GET'])
 def api_count_solicitudes_pendientes():
-    """Contar solicitudes pendientes"""
-    usuario_id = 1  # Temporal
-    count = execute_query("""
-        SELECT COUNT(*) as count 
-        FROM solicitudes 
-        WHERE id_destinatario = %s AND estado = 'pendiente'
-    """, (usuario_id,), fetch_one=True)
+    """Contar solicitudes pendientes para el usuario actual"""
+    
+    # Obtener usuario autenticado
+    user_id = request.headers.get('X-User-Id', 1)
+    
+    user = execute_query(
+        "SELECT id_usuario, rol, id_carrera FROM usuarios WHERE id_usuario = %s",
+        (user_id,),
+        fetch_one=True
+    )
+    
+    if not user:
+        return jsonify({'error': 'Usuario no encontrado'}), 404
+    
+    if user['rol'] == 'admin':
+        # ADMIN: Contar TODAS las pendientes
+        count = execute_query("""
+            SELECT COUNT(*) as count 
+            FROM solicitudes 
+            WHERE estado = 'pendiente'
+        """, fetch_one=True)
+    else:
+        # DIRECTOR: Contar SOLO las pendientes de su(s) carrera(s)
+        carreras = execute_query("""
+            SELECT c.id_carrera
+            FROM carreras c
+            JOIN usuarios_carreras uc ON c.id_carrera = uc.id_carrera
+            WHERE uc.id_usuario = %s
+        """, (user_id,), fetch_all=True)
+        
+        if not carreras:
+            return jsonify({'count': 0}), 200
+        
+        carreras_ids = [c['id_carrera'] for c in carreras]
+        carreras_str = ','.join(str(id) for id in carreras_ids)
+        
+        count = execute_query(f"""
+            SELECT COUNT(*) as count 
+            FROM solicitudes s
+            JOIN aulas a ON s.id_aula = a.id_aula
+            WHERE s.estado = 'pendiente'
+            AND a.id_carrera_asignada IN ({carreras_str})
+        """, fetch_one=True)
     
     return jsonify({'count': count['count'] if count else 0}), 200
 
@@ -1261,16 +1559,118 @@ def api_count_solicitudes_pendientes():
 
 @app.route('/api/reportes/ocupacion-turno', methods=['GET'])
 def api_reporte_ocupacion_turno():
-    """Obtener datos de ocupación por turno"""
-    from db_config import get_ocupacion_por_turno
-    data = get_ocupacion_por_turno()
+    """Obtener datos de ocupación por turno (filtrado por rol)"""
+    
+    # Obtener usuario autenticado
+    user_id = request.headers.get('X-User-Id', 1)
+    
+    user = execute_query(
+        "SELECT id_usuario, rol, id_carrera FROM usuarios WHERE id_usuario = %s",
+        (user_id,),
+        fetch_one=True
+    )
+    
+    if not user:
+        return jsonify({'error': 'Usuario no encontrado'}), 404
+    
+    if user['rol'] == 'admin':
+        # ADMIN: Ver TODOS los edificios
+        data = get_ocupacion_por_turno()
+    else:
+        # DIRECTOR: Ver SOLO los edificios de su(s) carrera(s)
+        carreras = execute_query("""
+            SELECT c.id_carrera
+            FROM carreras c
+            JOIN usuarios_carreras uc ON c.id_carrera = uc.id_carrera
+            WHERE uc.id_usuario = %s
+        """, (user_id,), fetch_all=True)
+        
+        if not carreras:
+            return jsonify([]), 200
+        
+        carreras_ids = [c['id_carrera'] for c in carreras]
+        carreras_str = ','.join(str(id) for id in carreras_ids)
+        
+        data = execute_query(f"""
+            SELECT 
+                e.nombre as edificio,
+                t.nombre_turno as turno,
+                COUNT(DISTINCT a.id_aula) as total_aulas,
+                COUNT(DISTINCT CASE 
+                    WHEN r.id_reserva IS NOT NULL 
+                    AND r.estado = 'activa'
+                    AND YEARWEEK(r.fecha_asignacion) = YEARWEEK(CURDATE())
+                    THEN a.id_aula 
+                END) as aulas_ocupadas,
+                ROUND(
+                    (COUNT(DISTINCT CASE 
+                        WHEN r.id_reserva IS NOT NULL 
+                        AND r.estado = 'activa'
+                        AND YEARWEEK(r.fecha_asignacion) = YEARWEEK(CURDATE())
+                        THEN a.id_aula 
+                    END) * 100.0) / COUNT(DISTINCT a.id_aula)
+                ) as porcentaje
+            FROM edificios e
+            JOIN aulas a ON e.id_edificio = a.id_edificio
+            CROSS JOIN turnos t
+            LEFT JOIN reservas r ON r.id_aula = a.id_aula
+                AND r.id_bloque IN (SELECT id_bloque FROM bloques_horarios WHERE id_turno = t.id_turno)
+                AND r.estado = 'activa'
+                AND YEARWEEK(r.fecha_asignacion) = YEARWEEK(CURDATE())
+            WHERE e.activo = 1 AND a.activo = 1
+            AND a.id_carrera_asignada IN ({carreras_str})
+            GROUP BY e.id_edificio, t.id_turno
+            ORDER BY e.nombre
+        """, fetch_all=True)
+    
     return jsonify(data), 200
 
 @app.route('/api/reportes/tipos-espacio', methods=['GET'])
 def api_reporte_tipos_espacio():
-    """Obtener distribución de tipos de espacio"""
-    from db_config import get_tipos_espacio
-    data = get_tipos_espacio()
+    """Obtener distribución de tipos de espacio (filtrado por rol)"""
+    
+    # Obtener usuario autenticado
+    user_id = request.headers.get('X-User-Id', 1)
+    
+    user = execute_query(
+        "SELECT id_usuario, rol, id_carrera FROM usuarios WHERE id_usuario = %s",
+        (user_id,),
+        fetch_one=True
+    )
+    
+    if not user:
+        return jsonify({'error': 'Usuario no encontrado'}), 404
+    
+    if user['rol'] == 'admin':
+        # ADMIN: Ver TODOS los tipos de espacio
+        data = get_tipos_espacio()
+    else:
+        # DIRECTOR: Ver SOLO los tipos de espacio de su(s) carrera(s)
+        carreras = execute_query("""
+            SELECT c.id_carrera
+            FROM carreras c
+            JOIN usuarios_carreras uc ON c.id_carrera = uc.id_carrera
+            WHERE uc.id_usuario = %s
+        """, (user_id,), fetch_all=True)
+        
+        if not carreras:
+            return jsonify([]), 200
+        
+        carreras_ids = [c['id_carrera'] for c in carreras]
+        carreras_str = ','.join(str(id) for id in carreras_ids)
+        
+        data = execute_query(f"""
+            SELECT 
+                t.nombre_tipo as tipo,
+                COUNT(a.id_aula) as cantidad
+            FROM aulas a
+            JOIN tipos_aula t ON a.id_tipo_aula = t.id_tipo_aula
+            WHERE a.activo = 1
+            AND a.id_carrera_asignada IN ({carreras_str})
+            GROUP BY t.id_tipo_aula
+            ORDER BY cantidad DESC
+        """, fetch_all=True)
+    
     return jsonify(data), 200
 
 # =====================================================

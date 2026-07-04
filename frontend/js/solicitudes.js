@@ -10,7 +10,15 @@ let solicitudesData = [];
 // =====================================================
 async function cargarSolicitudes() {
     try {
-        const res = await fetch('/api/solicitudes');
+        // Obtener usuario autenticado
+        const userStr = localStorage.getItem('user');
+        const user = userStr ? JSON.parse(userStr) : null;
+        
+        const res = await fetch('/api/solicitudes', {
+            headers: {
+                'X-User-Id': user ? user.id : '1'
+            }
+        });
         solicitudesData = await res.json();
         mostrarSolicitudes(solicitudesData);
     } catch (error) {
@@ -89,14 +97,21 @@ window.responderSolicitud = async function(id, estado) {
         `¿Estás seguro de ${accion} esta solicitud?`,
         null,
         null,
-        btnText  // ← Pasar el texto del botón
+        btnText
     );
     if (!confirmado) return;
+    
+    // Obtener usuario autenticado
+    const userStr = localStorage.getItem('user');
+    const user = userStr ? JSON.parse(userStr) : null;
         
     try {
         const res = await fetch(`/api/solicitudes/${id}/responder`, {
             method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
+            headers: { 
+                'Content-Type': 'application/json',
+                'X-User-Id': user ? user.id : '1'
+            },
             body: JSON.stringify({ estado, comentario: '' })
         });
         
@@ -118,7 +133,15 @@ window.responderSolicitud = async function(id, estado) {
 // =====================================================
 async function cargarEdificiosYEspacios() {
     try {
-        const resEdificios = await fetch('/api/infraestructura/edificios');
+        // Obtener usuario autenticado
+        const userStr = localStorage.getItem('user');
+        const user = userStr ? JSON.parse(userStr) : null;
+        
+        const resEdificios = await fetch('/api/infraestructura/edificios', {
+            headers: {
+                'X-User-Id': user ? user.id : '1'
+            }
+        });
         const edificios = await resEdificios.json();
         
         const selectEdificio = document.getElementById('solicitud-edificio');
@@ -140,7 +163,15 @@ async function cargarEdificiosYEspacios() {
             }
             
             try {
-                const resAulas = await fetch(`/api/infraestructura/edificios/${edificioId}/aulas`);
+                // Obtener usuario autenticado
+                const userStr = localStorage.getItem('user');
+                const user = userStr ? JSON.parse(userStr) : null;
+                
+                const resAulas = await fetch(`/api/infraestructura/edificios/${edificioId}/aulas`, {
+                    headers: {
+                        'X-User-Id': user ? user.id : '1'
+                    }
+                });
                 const aulas = await resAulas.json();
                 
                 selectAula.innerHTML = `
@@ -169,7 +200,6 @@ window.abrirModalCrear = function() {
     const modal = document.getElementById('solicitudModal');
     if (modal) {
         modal.classList.add('active');
-        // document.getElementById('solicitud-fecha').value = new Date().toISOString().split('T')[0]; --> Eliminado para permitir selección de fecha
     } else {
         console.error('❌ Modal no encontrado');
     }
@@ -199,8 +229,8 @@ document.getElementById('solicitudForm').addEventListener('submit', async functi
     
     const data = {
         id_aula: parseInt(document.getElementById('solicitud-aula').value),
-        id_dia: parseInt(document.getElementById('solicitud-dia').value),      // ← Nuevo
-        id_bloque: parseInt(document.getElementById('solicitud-bloque').value), // ← Nuevo
+        id_dia: parseInt(document.getElementById('solicitud-dia').value),
+        id_bloque: parseInt(document.getElementById('solicitud-bloque').value),
         id_turno: parseInt(document.getElementById('solicitud-turno').value),
         motivo: document.getElementById('solicitud-motivo').value,
         id_solicitante: user.id
@@ -214,7 +244,10 @@ document.getElementById('solicitudForm').addEventListener('submit', async functi
     try {
         const res = await fetch('/api/solicitudes', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: { 
+                'Content-Type': 'application/json',
+                'X-User-Id': user.id
+            },
             body: JSON.stringify(data)
         });
         
@@ -254,7 +287,6 @@ async function cargarBloquesPorTurno() {
             
             // Filtrar bloques por turno
             const bloquesFiltrados = bloques.filter(b => {
-                // Los bloques matutinos tienen hora_inicio < 15:00
                 const hora = b.hora_inicio.substring(0, 2);
                 if (turnoId === '1') {
                     return parseInt(hora) < 15;

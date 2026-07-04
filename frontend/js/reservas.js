@@ -82,13 +82,25 @@ async function cargarHorario(aulaId) {
     currentAulaId = aulaId;
     
     try {
+        // Obtener usuario autenticado
+        const userStr = localStorage.getItem('user');
+        const user = userStr ? JSON.parse(userStr) : null;
+        
         // Obtener datos del aula
-        const aulaRes = await fetch(`/api/infraestructura/aula/${aulaId}`);
+        const aulaRes = await fetch(`/api/infraestructura/aula/${aulaId}`, {
+            headers: {
+                'X-User-Id': user ? user.id : '1'
+            }
+        });
         const aulaData = await aulaRes.json();
         currentAulaData = aulaData;
         
         // Obtener reservas
-        const res = await fetch(`/api/reservas/aula/${aulaId}/semana`);
+        const res = await fetch(`/api/reservas/aula/${aulaId}/semana`, {
+            headers: {
+                'X-User-Id': user ? user.id : '1'
+            }
+        });
         reservasData = await res.json();
         
         mostrarHorario(reservasData);
@@ -323,8 +335,17 @@ async function eliminarReserva(id) {
     const confirmado = await showConfirm('¿Estás seguro de cancelar esta reserva?', null, null);
     if (!confirmado) return;
     
+    // Obtener usuario autenticado para la petición
+    const userStr = localStorage.getItem('user');
+    const user = userStr ? JSON.parse(userStr) : null;
+    
     try {
-        const res = await fetch(`/api/reservas/${id}`, { method: 'DELETE' });
+        const res = await fetch(`/api/reservas/${id}`, { 
+            method: 'DELETE',
+            headers: {
+                'X-User-Id': user ? user.id : '1'
+            }
+        });
         if (res.ok) {
             showToast('Reserva cancelada correctamente', 'success');
             cargarHorario(currentAulaId);
@@ -343,6 +364,10 @@ async function eliminarReserva(id) {
 // =====================================================
 document.getElementById('reservaForm').addEventListener('submit', async function(e) {
     e.preventDefault();
+    
+    // Obtener usuario autenticado
+    const userStr = localStorage.getItem('user');
+    const user = userStr ? JSON.parse(userStr) : null;
     
     const id = document.getElementById('reserva-id').value;
     const data = {
@@ -365,6 +390,12 @@ document.getElementById('reservaForm').addEventListener('submit', async function
         let url = '/api/reservas';
         let method = 'POST';
         
+        // Headers con autenticación
+        const headers = {
+            'Content-Type': 'application/json',
+            'X-User-Id': user ? user.id : '1'
+        };
+        
         if (id) {
             url = `/api/reservas/${id}`;
             method = 'PUT';
@@ -376,7 +407,7 @@ document.getElementById('reservaForm').addEventListener('submit', async function
             };
             const res = await fetch(url, {
                 method: method,
-                headers: { 'Content-Type': 'application/json' },
+                headers: headers,
                 body: JSON.stringify(editData)
             });
             
@@ -391,7 +422,7 @@ document.getElementById('reservaForm').addEventListener('submit', async function
         } else {
             const res = await fetch(url, {
                 method: method,
-                headers: { 'Content-Type': 'application/json' },
+                headers: headers,
                 body: JSON.stringify(data)
             });
             

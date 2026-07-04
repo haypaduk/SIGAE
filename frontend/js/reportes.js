@@ -65,7 +65,15 @@ async function inicializarReportes() {
 // =====================================================
 async function cargarOcupacionTurno() {
     try {
-        const res = await fetch('/api/reportes/ocupacion-turno');
+        // Obtener usuario autenticado
+        const userStr = localStorage.getItem('user');
+        const user = userStr ? JSON.parse(userStr) : null;
+        
+        const res = await fetch('/api/reportes/ocupacion-turno', {
+            headers: {
+                'X-User-Id': user ? user.id : '1'
+            }
+        });
         const data = await res.json();
         
         // Procesar datos para la gráfica
@@ -173,7 +181,15 @@ async function cargarOcupacionTurno() {
 // =====================================================
 async function cargarTiposEspacio() {
     try {
-        const res = await fetch('/api/reportes/tipos-espacio');
+        // Obtener usuario autenticado
+        const userStr = localStorage.getItem('user');
+        const user = userStr ? JSON.parse(userStr) : null;
+        
+        const res = await fetch('/api/reportes/tipos-espacio', {
+            headers: {
+                'X-User-Id': user ? user.id : '1'
+            }
+        });
         const data = await res.json();
         
         const labels = data.map(item => item.tipo);
@@ -230,9 +246,6 @@ async function cargarTiposEspacio() {
             }
         });
         
-        // Mostrar total en el centro de la gráfica
-        // (opcional, se puede agregar un plugin)
-        
     } catch (error) {
         console.error('Error cargando tipos de espacio:', error);
         document.querySelector('#chartTiposEspacio').parentElement.innerHTML = 
@@ -245,13 +258,29 @@ async function cargarTiposEspacio() {
 // =====================================================
 async function cargarInventario() {
     try {
-        const res = await fetch('/api/infraestructura/edificios');
+        // Obtener usuario autenticado
+        const userStr = localStorage.getItem('user');
+        const user = userStr ? JSON.parse(userStr) : null;
+        
+        const res = await fetch('/api/infraestructura/edificios', {
+            headers: {
+                'X-User-Id': user ? user.id : '1'
+            }
+        });
         const edificios = await res.json();
         
         // Para cada edificio, obtener detalle
         const inventario = [];
         for (const edificio of edificios) {
-            const detalleRes = await fetch(`/api/infraestructura/edificio/${edificio.id_edificio}/detalle`);
+            // Obtener usuario autenticado para el detalle
+            const userStr = localStorage.getItem('user');
+            const user = userStr ? JSON.parse(userStr) : null;
+            
+            const detalleRes = await fetch(`/api/infraestructura/edificio/${edificio.id_edificio}/detalle`, {
+                headers: {
+                    'X-User-Id': user ? user.id : '1'
+                }
+            });
             const detalle = await detalleRes.json();
             
             // Calcular capacidad total

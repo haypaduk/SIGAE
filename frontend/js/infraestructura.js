@@ -14,7 +14,15 @@ let estadoActual = 'todos';
 // =====================================================
 async function cargarEdificios() {
     try {
-        const res = await fetch('/api/infraestructura/edificios');
+        // Obtener usuario autenticado
+        const userStr = localStorage.getItem('user');
+        const user = userStr ? JSON.parse(userStr) : null;
+        
+        const res = await fetch('/api/infraestructura/edificios', {
+            headers: {
+                'X-User-Id': user ? user.id : '1'
+            }
+        });
         edificiosData = await res.json();
         
         const container = document.getElementById('edificios-container');
@@ -76,7 +84,15 @@ async function seleccionarEdificio(edificioId) {
     
     // Obtener datos completos del edificio
     try {
-        const res = await fetch(`/api/infraestructura/edificio/${edificioId}/detalle`);
+        // Obtener usuario autenticado
+        const userStr = localStorage.getItem('user');
+        const user = userStr ? JSON.parse(userStr) : null;
+        
+        const res = await fetch(`/api/infraestructura/edificio/${edificioId}/detalle`, {
+            headers: {
+                'X-User-Id': user ? user.id : '1'
+            }
+        });
         const data = await res.json();
         
         // Guardar aulas
