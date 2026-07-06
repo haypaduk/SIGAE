@@ -26,6 +26,7 @@ let turnoActivo = 'matutino';
 // CARGAR DATOS PARA RESERVAS
 // =====================================================
 async function cargarDatosReservas() {
+    console.log(' Cargando datos de reservas...');
     try {
         const [materiasRes, profesoresRes, diasRes, bloquesRes] = await Promise.all([
             fetch('/api/reservas/materias'),
@@ -39,11 +40,17 @@ async function cargarDatosReservas() {
         diasData = await diasRes.json();
         bloquesData = await bloquesRes.json();
         
-        // Llenar selects del modal
+        console.log(' Datos cargados:', {
+            materias: materiasData.length,
+            profesores: profesoresData.length,
+            dias: diasData.length,
+            bloques: bloquesData.length
+        });
+        
         llenarSelects();
         
     } catch (error) {
-        console.error('Error cargando datos:', error);
+        console.error(' Error cargando datos:', error);
         showToast('Error al cargar datos para reservas', 'error');
     }
 }
@@ -149,8 +156,8 @@ function mostrarHorario(reservas) {
         } else {
             return parseInt(hora) >= 15 && !(parseInt(hora) === 15 && parseInt(bloque.hora_inicio.substring(3, 5)) === 0);
         }
-    }).length;
-    
+    }).length;    
+
     // Obtener lista de carreras del edificio (desde la BD)
     const carreras = aula.carreras_edificio || [];
     

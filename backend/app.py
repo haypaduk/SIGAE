@@ -291,7 +291,11 @@ def api_aulas_by_edificio(edificio_id):
                LEFT JOIN tipos_aula t ON a.id_tipo_aula = t.id_tipo_aula
                LEFT JOIN reservas r ON a.id_aula = r.id_aula 
                    AND r.estado = 'activa'
-                   AND YEARWEEK(r.fecha_asignacion) = YEARWEEK(CURDATE())
+                    AND (
+                        r.tipo_reserva = 'clase'
+                        OR 
+                        (r.tipo_reserva = 'evento' AND r.fecha_asignacion >= CURDATE())
+                    )
                WHERE a.id_edificio = %s AND a.activo = 1
                GROUP BY a.id_aula
                ORDER BY a.piso DESC, a.identificador
@@ -324,7 +328,11 @@ def api_aulas_by_edificio(edificio_id):
                LEFT JOIN tipos_aula t ON a.id_tipo_aula = t.id_tipo_aula
                LEFT JOIN reservas r ON a.id_aula = r.id_aula 
                    AND r.estado = 'activa'
-                   AND YEARWEEK(r.fecha_asignacion) = YEARWEEK(CURDATE())
+                   AND (
+                       r.tipo_reserva = 'clase'
+                       OR 
+                       (r.tipo_reserva = 'evento' AND r.fecha_asignacion >= CURDATE())
+                   )
                WHERE a.id_edificio = %s AND a.activo = 1
                AND a.id_carrera_asignada IN ({carreras_str})
                GROUP BY a.id_aula
@@ -788,7 +796,7 @@ def api_delete_profesor(id_profesor):
 
 @app.route('/api/reservas/aula/<int:aula_id>/semana', methods=['GET'])
 def api_get_reservas_semana(aula_id):
-    """Obtener todas las reservas de un aula para la semana actual (filtrado por rol)"""
+    """Obtener reservas de un aula (todas las materias, eventos futuros)"""
     
     # Obtener usuario autenticado
     user_id = request.headers.get('X-User-Id', 1)
@@ -802,9 +810,8 @@ def api_get_reservas_semana(aula_id):
     if not user:
         return jsonify({'error': 'Usuario no encontrado'}), 404
     
-    # Verificar si el director tiene acceso a este aula
+    # Verificar acceso al aula
     if user['rol'] == 'director':
-        # Verificar que el aula pertenece a su carrera
         aula_check = execute_query("""
             SELECT a.id_aula 
             FROM aulas a
@@ -816,7 +823,8 @@ def api_get_reservas_semana(aula_id):
         if not aula_check:
             return jsonify({'error': 'No tienes acceso a este aula'}), 403
     
-    # Obtener reservas
+    # ===== CONSULTA DEFINITIVA =====
+    # IMPORTANTE: Cambiar la condición para que las materias (clase) siempre se muestren
     reservas = execute_query("""
         SELECT 
             r.id_reserva,
@@ -846,7 +854,13 @@ def api_get_reservas_semana(aula_id):
         LEFT JOIN usuarios u ON r.id_usuario = u.id_usuario
         WHERE r.id_aula = %s
         AND r.estado = 'activa'
-        AND YEARWEEK(r.fecha_asignacion) = YEARWEEK(CURDATE())
+        AND (
+            -- MATERIAS: siempre se muestran (sin importar la fecha)
+            r.tipo_reserva = 'clase'
+            OR 
+            -- EVENTOS: solo si son hoy o futuros
+            (r.tipo_reserva = 'evento' AND r.fecha_asignacion >= CURDATE())
+        )
         ORDER BY d.orden, b.orden_dia
     """, (aula_id,), fetch_all=True)
     
@@ -857,11 +871,13 @@ def api_get_reservas_semana(aula_id):
         if reserva.get('hora_fin'):
             reserva['hora_fin'] = str(reserva['hora_fin'])
     
+    print(f" Reservas devueltas para aula {aula_id}: {len(reservas)}")  # ← Para depurar
+    
     return jsonify(reservas), 200
 
 @app.route('/api/reservas', methods=['POST'])
 def api_create_reserva():
-    """Crear una nueva reserva (solo si el usuario tiene acceso)"""
+    """Crear una nueva reserva"""
     data = request.get_json()
     
     id_aula = data.get('id_aula')
@@ -892,8 +908,8 @@ def api_create_reserva():
     existente = execute_query("""
         SELECT id_reserva FROM reservas 
         WHERE id_aula = %s AND id_dia = %s AND id_bloque = %s 
-        AND fecha_asignacion = %s AND estado = 'activa'
-    """, (id_aula, id_dia, id_bloque, fecha_asignacion), fetch_one=True)
+        AND estado = 'activa'
+    """, (id_aula, id_dia, id_bloque), fetch_one=True)
     
     if existente:
         return jsonify({'error': 'Este horario ya está ocupado'}), 400
@@ -911,12 +927,18 @@ def api_create_reserva():
         if not aula_check:
             return jsonify({'error': 'No tienes permiso para reservar este aula'}), 403
     
-    # Crear reserva
+    # ===== CAMBIO IMPORTANTE =====
+    # Para materias (clases), fecha_asignacion = '9999-12-31' (siempre visible)
+    # Para eventos, usar la fecha real
+    # Por ahora, como no sabemos el tipo, usamos '9999-12-31' para clases
+    # pero en el futuro se puede mejorar
+    
+    # Crear reserva con fecha fija '9999-12-31' para que siempre sea visible
     execute_query("""
         INSERT INTO reservas (id_aula, id_usuario, id_dia, id_bloque, 
                             fecha_reserva, fecha_asignacion, id_materia, id_profesor, grupo, estado)
-        VALUES (%s, %s, %s, %s, CURDATE(), %s, %s, %s, %s, 'activa')
-    """, (id_aula, user['id_usuario'], id_dia, id_bloque, fecha_asignacion, id_materia, id_profesor, grupo))
+        VALUES (%s, %s, %s, %s, CURDATE(), '9999-12-31', %s, %s, %s, 'activa')
+    """, (id_aula, user['id_usuario'], id_dia, id_bloque, id_materia, id_profesor, grupo))
     
     return jsonify({'message': 'Reserva creada exitosamente'}), 201
 
@@ -1089,7 +1111,7 @@ def api_edificio_detalle(edificio_id):
     if not edificio:
         return jsonify({'error': 'Edificio no encontrado'}), 404
     
-    # Obtener aulas del edificio con ocupación
+    # Obtener aulas del edificio con ocupación (incluyendo clases permanentes)
     aulas = execute_query("""
         SELECT 
             a.id_aula,
@@ -1106,7 +1128,11 @@ def api_edificio_detalle(edificio_id):
         LEFT JOIN tipos_aula t ON a.id_tipo_aula = t.id_tipo_aula
         LEFT JOIN reservas r ON a.id_aula = r.id_aula 
             AND r.estado = 'activa'
-            AND YEARWEEK(r.fecha_asignacion) = YEARWEEK(CURDATE())
+            AND (
+                r.tipo_reserva = 'clase'
+                OR 
+                (r.tipo_reserva = 'evento' AND r.fecha_asignacion >= CURDATE())
+            )
         WHERE a.id_edificio = %s AND a.activo = 1
         GROUP BY a.id_aula
         ORDER BY a.piso DESC, a.identificador

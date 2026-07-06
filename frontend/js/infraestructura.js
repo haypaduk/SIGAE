@@ -14,7 +14,6 @@ let estadoActual = 'todos';
 // =====================================================
 async function cargarEdificios() {
     try {
-        // Obtener usuario autenticado
         const userStr = localStorage.getItem('user');
         const user = userStr ? JSON.parse(userStr) : null;
         
@@ -32,7 +31,6 @@ async function cargarEdificios() {
             return;
         }
         
-        // Mostrar estadísticas de edificios (totales)
         const totalEdificios = edificiosData.length;
         const totalAulas = edificiosData.reduce((sum, e) => sum + (e.total_aulas || 0), 0);
         
@@ -55,7 +53,6 @@ async function cargarEdificios() {
             </div>
         `;
         
-        // Si hay edificios y no hay uno seleccionado, seleccionar el primero
         if (edificiosData.length > 0 && !edificioSeleccionado) {
             seleccionarEdificio(edificiosData[0].id_edificio);
         }
@@ -73,7 +70,6 @@ async function cargarEdificios() {
 async function seleccionarEdificio(edificioId) {
     edificioSeleccionado = edificioId;
     
-    // Actualizar la lista de edificios (resaltar el seleccionado)
     const cards = document.querySelectorAll('.edificio-card');
     cards.forEach(card => {
         card.classList.remove('active');
@@ -82,9 +78,7 @@ async function seleccionarEdificio(edificioId) {
         }
     });
     
-    // Obtener datos completos del edificio
     try {
-        // Obtener usuario autenticado
         const userStr = localStorage.getItem('user');
         const user = userStr ? JSON.parse(userStr) : null;
         
@@ -95,10 +89,8 @@ async function seleccionarEdificio(edificioId) {
         });
         const data = await res.json();
         
-        // Guardar aulas
         aulasData = data.aulas || [];
         
-        // Mostrar resumen y aulas
         mostrarResumen(data);
         mostrarAulas(aulasData);
         
@@ -137,7 +129,6 @@ function mostrarResumen(data) {
         </div>
     `;
     
-    // Agregar filtros
     html += `
         <div class="filtros-container">
             <button class="filtro-btn ${filtroActual === 'todas' ? 'active' : ''}" onclick="aplicarFiltro('todas')">
@@ -165,7 +156,6 @@ function mostrarResumen(data) {
         </div>
     `;
     
-    // Agregar contenedor de aulas
     html += `<div id="aulas-grid"></div>`;
     
     container.innerHTML = html;
@@ -178,17 +168,14 @@ function mostrarAulas(aulas) {
     const grid = document.getElementById('aulas-grid');
     if (!grid) return;
     
-    // Aplicar filtros
     let aulasFiltradas = [...aulas];
     
-    // Filtro por planta
     if (filtroActual === 'baja') {
         aulasFiltradas = aulasFiltradas.filter(a => a.piso === 'Planta Baja');
     } else if (filtroActual === 'alta') {
         aulasFiltradas = aulasFiltradas.filter(a => a.piso === 'Planta Alta');
     }
     
-    // Filtro por estado
     if (estadoActual === 'libre') {
         aulasFiltradas = aulasFiltradas.filter(a => a.porcentaje_ocupacion === 0 || a.porcentaje_ocupacion < 20);
     } else if (estadoActual === 'parcial') {
@@ -244,7 +231,6 @@ function mostrarAulas(aulas) {
 function aplicarFiltro(filtro) {
     filtroActual = filtro;
     
-    // Actualizar botones
     document.querySelectorAll('.filtro-btn').forEach(btn => {
         if (btn.textContent.includes('Todas') || btn.textContent.includes('Planta')) {
             btn.classList.remove('active');
@@ -266,7 +252,6 @@ function aplicarFiltro(filtro) {
 function aplicarEstado(estado) {
     estadoActual = estado;
     
-    // Actualizar botones de estado
     document.querySelectorAll('.filtro-btn').forEach(btn => {
         if (btn.textContent.includes('Todos') || btn.textContent.includes('Libre') || 
             btn.textContent.includes('Parcial') || btn.textContent.includes('Ocupado')) {
@@ -293,16 +278,26 @@ function aplicarEstado(estado) {
 function verHorario(aulaId) {
     console.log('📅 Ver horario del aula ID:', aulaId);
     
+    document.getElementById('horarioModal').classList.add('active');
+    
     cargarDatosReservas().then(() => {
         cargarHorario(aulaId);
+    }).catch(error => {
+        console.error('Error cargando datos:', error);
+        showToast('Error al cargar el horario', 'error');
     });
-    
-    document.getElementById('horarioModal').classList.add('active');
 }
 
-function cerrarHorarioModal() {
-    document.getElementById('horarioModal').classList.remove('active');
-}
+// =====================================================
+// CERRAR MODAL DE HORARIO (GLOBAL)
+// =====================================================
+window.cerrarHorarioModal = function() {
+    const modal = document.getElementById('horarioModal');
+    if (modal) {
+        modal.classList.remove('active');
+    }
+    console.log('🔒 Modal de horario cerrado');
+};
 
 // =====================================================
 // INICIALIZACIÓN

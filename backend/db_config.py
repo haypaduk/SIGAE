@@ -110,14 +110,18 @@ def get_dashboard_stats():
     cursor.execute("SELECT COUNT(*) as total FROM edificios WHERE activo = 1")
     total_edificios = cursor.fetchone()['total']
     
-    # Aulas con reservas activas en la semana actual
+    # Aulas con reservas activas (clases siempre cuentan, eventos futuros)
     cursor.execute("""
         SELECT 
             COUNT(DISTINCT id_aula) as aulas_con_reservas,
             COUNT(*) as total_reservas
         FROM reservas 
         WHERE estado = 'activa' 
-        AND YEARWEEK(fecha_asignacion) = YEARWEEK(CURDATE())
+        AND (
+            tipo_reserva = 'clase'
+            OR 
+            (tipo_reserva = 'evento' AND fecha_asignacion >= CURDATE())
+        )
     """)
     stats = cursor.fetchone()
     aulas_ocupadas = stats['aulas_con_reservas'] or 0
@@ -127,7 +131,11 @@ def get_dashboard_stats():
         SELECT COUNT(DISTINCT id_aula) as parcial 
         FROM reservas 
         WHERE estado = 'activa' 
-        AND YEARWEEK(fecha_asignacion) = YEARWEEK(CURDATE())
+        AND (
+            tipo_reserva = 'clase'
+            OR 
+            (tipo_reserva = 'evento' AND fecha_asignacion >= CURDATE())
+        )
     """)
     parcial = cursor.fetchone()['parcial'] or 0
     
@@ -139,13 +147,17 @@ def get_dashboard_stats():
     cursor.execute("""
         SELECT 
             ROUND(
-                (COUNT(*) * 100.0) / 
+                (COUNT(DISTINCT id_aula) * 100.0) / 
                 ((SELECT COUNT(*) FROM bloques_horarios WHERE id_turno IN (1,2)) * 
                  (SELECT COUNT(*) FROM dias_semana WHERE activo_sabado = 1 OR orden <= 5))
             ) as porcentaje_global
         FROM reservas r
         WHERE r.estado = 'activa'
-        AND YEARWEEK(r.fecha_asignacion) = YEARWEEK(CURDATE())
+        AND (
+            r.tipo_reserva = 'clase'
+            OR 
+            (r.tipo_reserva = 'evento' AND r.fecha_asignacion >= CURDATE())
+        )
     """)
     porcentaje = cursor.fetchone()
     porcentaje_global = porcentaje['porcentaje_global'] if porcentaje and porcentaje['porcentaje_global'] else 0
@@ -181,33 +193,47 @@ def get_aulas_alta_demanda(limit=5):
         return []
     
     cursor = conn.cursor(dictionary=True)
-    cursor.execute("""
-        SELECT 
-            a.id_aula,
-            a.identificador,
-            e.nombre as edificio,
-            a.capacidad,
-            COUNT(r.id_reserva) as total_reservas,
-            ROUND(
-                (COUNT(r.id_reserva) * 100.0) / 
-                ((SELECT COUNT(*) FROM bloques_horarios) * 5)
-            ) as porcentaje_ocupacion
-        FROM aulas a
-        JOIN edificios e ON a.id_edificio = e.id_edificio
-        LEFT JOIN reservas r ON a.id_aula = r.id_aula 
-            AND r.estado = 'activa'
-            AND YEARWEEK(r.fecha_asignacion) = YEARWEEK(CURDATE())
-        WHERE a.activo = 1
-        GROUP BY a.id_aula
-        HAVING porcentaje_ocupacion > 0
-        ORDER BY porcentaje_ocupacion DESC
-        LIMIT %s
-    """, (limit,))
     
-    resultados = cursor.fetchall()
-    cursor.close()
-    conn.close()
-    return resultados
+    try:
+        cursor.execute("""
+            SELECT 
+                a.id_aula,
+                a.identificador,
+                e.nombre as edificio,
+                a.capacidad,
+                COUNT(r.id_reserva) as total_reservas,
+                ROUND(
+                    (COUNT(r.id_reserva) * 100.0) / 
+                    ((SELECT COUNT(*) FROM bloques_horarios) * 5)
+                ) as porcentaje_ocupacion
+            FROM aulas a
+            JOIN edificios e ON a.id_edificio = e.id_edificio
+            LEFT JOIN reservas r ON a.id_aula = r.id_aula 
+                AND r.estado = 'activa'
+                AND (
+                    r.tipo_reserva = 'clase'
+                    OR 
+                    (r.tipo_reserva = 'evento' AND r.fecha_asignacion >= CURDATE())
+                )
+            WHERE a.activo = 1
+            GROUP BY a.id_aula
+            HAVING porcentaje_ocupacion > 0
+            ORDER BY porcentaje_ocupacion DESC
+            LIMIT %s
+        """, (limit,))
+        
+        resultados = cursor.fetchall()
+        cursor.close()
+        conn.close()
+        return resultados
+        
+    except Exception as e:
+        print(f"Error en get_alta_demanda_admin: {e}")
+        return []
+        
+    finally:
+        cursor.close()
+        conn.close()
 
 
 def get_aulas_subutilizadas(limit=5):
@@ -225,32 +251,47 @@ def get_aulas_subutilizadas(limit=5):
         return []
     
     cursor = conn.cursor(dictionary=True)
-    cursor.execute("""
-        SELECT 
-            a.id_aula,
-            a.identificador,
-            e.nombre as edificio,
-            a.capacidad,
-            COUNT(r.id_reserva) as total_reservas,
-            ROUND(
-                (COUNT(r.id_reserva) * 100.0) / 
-                ((SELECT COUNT(*) FROM bloques_horarios) * 5)
-            ) as porcentaje_ocupacion
-        FROM aulas a
-        JOIN edificios e ON a.id_edificio = e.id_edificio
-        LEFT JOIN reservas r ON a.id_aula = r.id_aula 
-            AND r.estado = 'activa'
-            AND YEARWEEK(r.fecha_asignacion) = YEARWEEK(CURDATE())
-        WHERE a.activo = 1
-        GROUP BY a.id_aula
-        ORDER BY porcentaje_ocupacion ASC
-        LIMIT %s
-    """, (limit,))
+    
+    try:
+        cursor.execute("""
+            SELECT 
+                a.id_aula,
+                a.identificador,
+                e.nombre as edificio,
+                a.capacidad,
+                COUNT(r.id_reserva) as total_reservas,
+                ROUND(
+                    (COUNT(r.id_reserva) * 100.0) / 
+                    ((SELECT COUNT(*) FROM bloques_horarios) * 5)
+                ) as porcentaje_ocupacion
+            FROM aulas a
+            JOIN edificios e ON a.id_edificio = e.id_edificio
+            LEFT JOIN reservas r ON a.id_aula = r.id_aula 
+                AND r.estado = 'activa'
+                AND (
+                    r.tipo_reserva = 'clase'
+                    OR 
+                    (r.tipo_reserva = 'evento' AND r.fecha_asignacion >= CURDATE())
+                )
+            WHERE a.activo = 1
+            GROUP BY a.id_aula
+            ORDER BY porcentaje_ocupacion ASC
+            LIMIT %s
+        """, (limit,))
+        
+        resultados = cursor.fetchall()
+        cursor.close()
+        conn.close()
+        return resultados
+        
+    except Exception as e:
+        print(f"Error en get_subutilizadas_admin: {e}")
+        return []
+        
+    finally:
+        cursor.close()
+        conn.close()
 
-    resultados = cursor.fetchall()
-    cursor.close()
-    conn.close()
-    return resultados
 
 def get_aulas_por_carrera(carreras_ids):
     """
@@ -273,38 +314,53 @@ def get_aulas_por_carrera(carreras_ids):
         return []
     
     cursor = conn.cursor(dictionary=True)
-    cursor.execute(f"""
-        SELECT 
-            a.id_aula,
-            a.identificador,
-            a.piso,
-            a.capacidad,
-            e.nombre as edificio,
-            e.id_edificio,
-            t.nombre_tipo as tipo,
-            c.clave_carrera as carrera,
-            COUNT(r.id_reserva) as reservas_count,
-            ROUND(
-                (COUNT(r.id_reserva) * 100.0) / 
-                ((SELECT COUNT(*) FROM bloques_horarios) * 5)
-            ) as porcentaje_ocupacion
-        FROM aulas a
-        JOIN edificios e ON a.id_edificio = e.id_edificio
-        JOIN tipos_aula t ON a.id_tipo_aula = t.id_tipo_aula
-        LEFT JOIN carreras c ON a.id_carrera_asignada = c.id_carrera
-        LEFT JOIN reservas r ON a.id_aula = r.id_aula 
-            AND r.estado = 'activa'
-            AND YEARWEEK(r.fecha_asignacion) = YEARWEEK(CURDATE())
-        WHERE a.activo = 1 
-            AND a.id_carrera_asignada IN ({ids_str})
-        GROUP BY a.id_aula
-        ORDER BY e.nombre, a.identificador
-    """)
     
-    resultados = cursor.fetchall()
-    cursor.close()
-    conn.close()
-    return resultados
+    try:
+        cursor.execute(f"""
+            SELECT 
+                a.id_aula,
+                a.identificador,
+                a.piso,
+                a.capacidad,
+                e.nombre as edificio,
+                e.id_edificio,
+                t.nombre_tipo as tipo,
+                c.clave_carrera as carrera,
+                COUNT(r.id_reserva) as reservas_count,
+                ROUND(
+                    (COUNT(r.id_reserva) * 100.0) / 
+                    ((SELECT COUNT(*) FROM bloques_horarios) * 5)
+                ) as porcentaje_ocupacion
+            FROM aulas a
+            JOIN edificios e ON a.id_edificio = e.id_edificio
+            JOIN tipos_aula t ON a.id_tipo_aula = t.id_tipo_aula
+            LEFT JOIN carreras c ON a.id_carrera_asignada = c.id_carrera
+            LEFT JOIN reservas r ON a.id_aula = r.id_aula 
+                AND r.estado = 'activa'
+                AND (
+                    r.tipo_reserva = 'clase'
+                    OR 
+                    (r.tipo_reserva = 'evento' AND r.fecha_asignacion >= CURDATE())
+                )
+            WHERE a.activo = 1 
+                AND a.id_carrera_asignada IN ({ids_str})
+            GROUP BY a.id_aula
+            ORDER BY e.nombre, a.identificador
+        """)
+        
+        resultados = cursor.fetchall()
+        cursor.close()
+        conn.close()
+        return resultados
+        
+    except Exception as e:
+        print(f"Error en get_aulas_por_carrera: {e}")
+        return []
+        
+    finally:
+        cursor.close()
+        conn.close()
+
 
 # =====================================================
 # DASHBOARD - DATOS REALES (CORREGIDO)
@@ -327,21 +383,29 @@ def get_dashboard_stats_admin():
         cursor.execute("SELECT COUNT(*) as total FROM edificios WHERE activo = 1")
         total_edificios = cursor.fetchone()['total']
         
-        # Aulas CON reservas activas en la semana actual
+        # Aulas CON reservas activas (clases siempre cuentan, eventos futuros)
         cursor.execute("""
             SELECT COUNT(DISTINCT id_aula) as ocupadas
             FROM reservas 
             WHERE estado = 'activa' 
-            AND YEARWEEK(fecha_asignacion) = YEARWEEK(CURDATE())
+            AND (
+                tipo_reserva = 'clase'
+                OR 
+                (tipo_reserva = 'evento' AND fecha_asignacion >= CURDATE())
+            )
         """)
         ocupadas = cursor.fetchone()['ocupadas'] or 0
         
-        # Aulas con uso parcial (tienen algunas reservas pero no todas)
+        # Aulas con uso parcial
         cursor.execute("""
             SELECT COUNT(DISTINCT id_aula) as parcial
             FROM reservas 
             WHERE estado = 'activa' 
-            AND YEARWEEK(fecha_asignacion) = YEARWEEK(CURDATE())
+            AND (
+                tipo_reserva = 'clase'
+                OR 
+                (tipo_reserva = 'evento' AND fecha_asignacion >= CURDATE())
+            )
         """)
         parcial = cursor.fetchone()['parcial'] or 0
         
@@ -390,14 +454,18 @@ def get_dashboard_stats_director(id_carrera):
         """, (id_carrera,))
         total_aulas = cursor.fetchone()['total'] or 0
         
-        # Aulas CON reservas activas en la semana actual (de su carrera)
+        # Aulas CON reservas activas (clases siempre cuentan, eventos futuros)
         cursor.execute("""
             SELECT COUNT(DISTINCT r.id_aula) as ocupadas
             FROM reservas r
             JOIN aulas a ON r.id_aula = a.id_aula
             WHERE r.estado = 'activa' 
             AND a.id_carrera_asignada = %s
-            AND YEARWEEK(r.fecha_asignacion) = YEARWEEK(CURDATE())
+            AND (
+                r.tipo_reserva = 'clase'
+                OR 
+                (r.tipo_reserva = 'evento' AND r.fecha_asignacion >= CURDATE())
+            )
         """, (id_carrera,))
         ocupadas = cursor.fetchone()['ocupadas'] or 0
         
@@ -444,7 +512,11 @@ def get_alta_demanda_admin():
             JOIN edificios e ON a.id_edificio = e.id_edificio
             LEFT JOIN reservas r ON a.id_aula = r.id_aula 
                 AND r.estado = 'activa'
-                AND YEARWEEK(r.fecha_asignacion) = YEARWEEK(CURDATE())
+                AND (
+                    r.tipo_reserva = 'clase'
+                    OR 
+                    (r.tipo_reserva = 'evento' AND r.fecha_asignacion >= CURDATE())
+                )
             WHERE a.activo = 1
             GROUP BY a.id_aula
             HAVING porcentaje_ocupacion > 0
@@ -486,7 +558,11 @@ def get_alta_demanda_director(id_carrera):
             JOIN edificios e ON a.id_edificio = e.id_edificio
             LEFT JOIN reservas r ON a.id_aula = r.id_aula 
                 AND r.estado = 'activa'
-                AND YEARWEEK(r.fecha_asignacion) = YEARWEEK(CURDATE())
+                AND (
+                    r.tipo_reserva = 'clase'
+                    OR 
+                    (r.tipo_reserva = 'evento' AND r.fecha_asignacion >= CURDATE())
+                )
             WHERE a.activo = 1 
             AND a.id_carrera_asignada = %s
             GROUP BY a.id_aula
@@ -529,7 +605,11 @@ def get_subutilizadas_admin():
             JOIN edificios e ON a.id_edificio = e.id_edificio
             LEFT JOIN reservas r ON a.id_aula = r.id_aula 
                 AND r.estado = 'activa'
-                AND YEARWEEK(r.fecha_asignacion) = YEARWEEK(CURDATE())
+                AND (
+                    r.tipo_reserva = 'clase'
+                    OR 
+                    (r.tipo_reserva = 'evento' AND r.fecha_asignacion >= CURDATE())
+                )
             WHERE a.activo = 1
             GROUP BY a.id_aula
             ORDER BY porcentaje_ocupacion ASC
@@ -570,7 +650,11 @@ def get_subutilizadas_director(id_carrera):
             JOIN edificios e ON a.id_edificio = e.id_edificio
             LEFT JOIN reservas r ON a.id_aula = r.id_aula 
                 AND r.estado = 'activa'
-                AND YEARWEEK(r.fecha_asignacion) = YEARWEEK(CURDATE())
+                AND (
+                    r.tipo_reserva = 'clase'
+                    OR 
+                    (r.tipo_reserva = 'evento' AND r.fecha_asignacion >= CURDATE())
+                )
             WHERE a.activo = 1 
             AND a.id_carrera_asignada = %s
             GROUP BY a.id_aula
@@ -610,7 +694,11 @@ def get_ocupacion_edificios_admin():
             JOIN aulas a ON e.id_edificio = a.id_edificio
             LEFT JOIN reservas r ON a.id_aula = r.id_aula 
                 AND r.estado = 'activa'
-                AND YEARWEEK(r.fecha_asignacion) = YEARWEEK(CURDATE())
+                AND (
+                    r.tipo_reserva = 'clase'
+                    OR 
+                    (r.tipo_reserva = 'evento' AND r.fecha_asignacion >= CURDATE())
+                )
             WHERE e.activo = 1 AND a.activo = 1
             GROUP BY e.id_edificio
             ORDER BY e.nombre
@@ -625,6 +713,7 @@ def get_ocupacion_edificios_admin():
     finally:
         cursor.close()
         conn.close()
+
 
 def get_ocupacion_edificios_director(id_carrera):
     """Ocupación por edificio (DIRECTOR - ve solo su carrera)"""
@@ -647,7 +736,11 @@ def get_ocupacion_edificios_director(id_carrera):
             JOIN aulas a ON e.id_edificio = a.id_edificio
             LEFT JOIN reservas r ON a.id_aula = r.id_aula 
                 AND r.estado = 'activa'
-                AND YEARWEEK(r.fecha_asignacion) = YEARWEEK(CURDATE())
+                AND (
+                    r.tipo_reserva = 'clase'
+                    OR 
+                    (r.tipo_reserva = 'evento' AND r.fecha_asignacion >= CURDATE())
+                )
             WHERE e.activo = 1 AND a.activo = 1
             AND a.id_carrera_asignada = %s
             GROUP BY e.id_edificio
@@ -664,6 +757,7 @@ def get_ocupacion_edificios_director(id_carrera):
         cursor.close()
         conn.close()
 
+
 # =====================================================
 # REPORTES - OCUPACIÓN POR TURNO
 # =====================================================
@@ -676,43 +770,59 @@ def get_ocupacion_por_turno():
     
     cursor = conn.cursor(dictionary=True)
     
-    # Obtener ocupación por edificio y turno
-    cursor.execute("""
-        SELECT 
-            e.nombre as edificio,
-            t.nombre_turno as turno,
-            COUNT(DISTINCT a.id_aula) as total_aulas,
-            COUNT(DISTINCT CASE 
-                WHEN r.id_reserva IS NOT NULL 
-                AND r.estado = 'activa'
-                AND YEARWEEK(r.fecha_asignacion) = YEARWEEK(CURDATE())
-                THEN a.id_aula 
-            END) as aulas_ocupadas,
-            ROUND(
-                (COUNT(DISTINCT CASE 
+    try:
+        cursor.execute("""
+            SELECT 
+                e.nombre as edificio,
+                t.nombre_turno as turno,
+                COUNT(DISTINCT a.id_aula) as total_aulas,
+                COUNT(DISTINCT CASE 
                     WHEN r.id_reserva IS NOT NULL 
                     AND r.estado = 'activa'
-                    AND YEARWEEK(r.fecha_asignacion) = YEARWEEK(CURDATE())
+                    AND (
+                        r.tipo_reserva = 'clase'
+                        OR 
+                        (r.tipo_reserva = 'evento' AND r.fecha_asignacion >= CURDATE())
+                    )
                     THEN a.id_aula 
-                END) * 100.0) / COUNT(DISTINCT a.id_aula)
-            ) as porcentaje
-        FROM edificios e
-        JOIN aulas a ON e.id_edificio = a.id_edificio
-        CROSS JOIN turnos t
-        LEFT JOIN reservas r ON r.id_aula = a.id_aula
-            AND r.id_bloque IN (SELECT id_bloque FROM bloques_horarios WHERE id_turno = t.id_turno)
-            AND r.estado = 'activa'
-            AND YEARWEEK(r.fecha_asignacion) = YEARWEEK(CURDATE())
-        WHERE e.activo = 1 AND a.activo = 1
-        GROUP BY e.id_edificio, t.id_turno
-        ORDER BY e.nombre
-    """)
-    
-    resultados = cursor.fetchall()
-    cursor.close()
-    conn.close()
-    
-    return resultados
+                END) as aulas_ocupadas,
+                ROUND(
+                    (COUNT(DISTINCT CASE 
+                        WHEN r.id_reserva IS NOT NULL 
+                        AND r.estado = 'activa'
+                        AND (
+                            r.tipo_reserva = 'clase'
+                            OR 
+                            (r.tipo_reserva = 'evento' AND r.fecha_asignacion >= CURDATE())
+                        )
+                        THEN a.id_aula 
+                    END) * 100.0) / COUNT(DISTINCT a.id_aula)
+                ) as porcentaje
+            FROM edificios e
+            JOIN aulas a ON e.id_edificio = a.id_edificio
+            CROSS JOIN turnos t
+            LEFT JOIN reservas r ON r.id_aula = a.id_aula
+                AND r.id_bloque IN (SELECT id_bloque FROM bloques_horarios WHERE id_turno = t.id_turno)
+                AND r.estado = 'activa'
+                AND (
+                    r.tipo_reserva = 'clase'
+                    OR 
+                    (r.tipo_reserva = 'evento' AND r.fecha_asignacion >= CURDATE())
+                )
+            WHERE e.activo = 1 AND a.activo = 1
+            GROUP BY e.id_edificio, t.id_turno
+            ORDER BY e.nombre
+        """)
+        
+        return cursor.fetchall()
+        
+    except Exception as e:
+        print(f"Error en get_ocupacion_por_turno: {e}")
+        return []
+        
+    finally:
+        cursor.close()
+        conn.close()
 
 
 def get_tipos_espacio():
@@ -723,22 +833,28 @@ def get_tipos_espacio():
     
     cursor = conn.cursor(dictionary=True)
     
-    cursor.execute("""
-        SELECT 
-            t.nombre_tipo as tipo,
-            COUNT(a.id_aula) as cantidad
-        FROM aulas a
-        JOIN tipos_aula t ON a.id_tipo_aula = t.id_tipo_aula
-        WHERE a.activo = 1
-        GROUP BY t.id_tipo_aula
-        ORDER BY cantidad DESC
-    """)
-    
-    resultados = cursor.fetchall()
-    cursor.close()
-    conn.close()
-    
-    return resultados
+    try:
+        cursor.execute("""
+            SELECT 
+                t.nombre_tipo as tipo,
+                COUNT(a.id_aula) as cantidad
+            FROM aulas a
+            JOIN tipos_aula t ON a.id_tipo_aula = t.id_tipo_aula
+            WHERE a.activo = 1
+            GROUP BY t.id_tipo_aula
+            ORDER BY cantidad DESC
+        """)
+        
+        return cursor.fetchall()
+        
+    except Exception as e:
+        print(f"Error en get_tipos_espacio: {e}")
+        return []
+        
+    finally:
+        cursor.close()
+        conn.close()
+
 
 # =====================================================
 # CICLO CUATRIMESTRAL - DETECCIÓN AUTOMÁTICA
