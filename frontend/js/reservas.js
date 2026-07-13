@@ -162,19 +162,49 @@ function mostrarHorario(reservas) {
     const carreras = aula.carreras_edificio || [];
     
     let html = `
-        <!-- ===== ENCABEZADO FIJO ===== -->
-        <div class="horario-fixed-header">
-            <!-- Encabezado del horario -->
-            <div class="horario-header">
-                <div class="horario-titulo-aula">
-                    <h2><i class="fas fa-chalkboard"></i> ${aula.identificador}</h2>
-                    <p><i class="fas fa-layer-group"></i> ${aula.piso} · <i class="fas fa-users"></i> ${aula.capacidad} lugares</p>
+        <div class="aula-info-grid">
+            <!-- Aula -->
+            <div class="aula-info-card">
+                <div class="aula-info-icon" style="background: rgba(139, 28, 42, 0.12);">
+                    <i class="fas fa-door-open" aria-hidden="true"></i>
                 </div>
-                <div class="horario-subtitulo">
-                    <h4><i class="fas fa-calendar-alt"></i> Gestión de Horario — ${aula.edificio_nombre || 'Edificio'}</h4>
+                <div class="aula-info-content">
+                    <span class="aula-info-label">Aula</span>
+                    <span class="aula-info-value">${aula.identificador || 'N/A'}</span>
                 </div>
             </div>
-            
+            <!-- Edificio -->
+            <div class="aula-info-card">
+                <div class="aula-info-icon" style="background: rgba(52, 152, 219, 0.12);">
+                    <i class="fas fa-building" aria-hidden="true"></i>
+                </div>
+                <div class="aula-info-content">
+                    <span class="aula-info-label">Edificio</span>
+                    <span class="aula-info-value">${aula.edificio_nombre}</span>
+                </div>
+            </div>
+            <!-- Capacidad -->
+            <div class="aula-info-card">
+                <div class="aula-info-icon" style="background: rgba(39, 174, 96, 0.12);">
+                    <i class="fas fa-users" aria-hidden="true"></i>
+                </div>
+                <div class="aula-info-content">
+                    <span class="aula-info-label">Capacidad</span>
+                    <span class="aula-info-value">${aula.capacidad || 0} lugares</span>
+                </div>
+            </div>
+            <!-- Piso -->
+            <div class="aula-info-card">
+                <div class="aula-info-icon" style="background: rgba(243, 156, 18, 0.12);">
+                    <i class="fas fa-layer-group" aria-hidden="true"></i>
+                </div>
+                <div class="aula-info-content">
+                    <span class="aula-info-label">Piso</span>
+                    <span class="aula-info-value">${aula.piso || 'Sin piso'}</span>
+                </div>
+            </div>
+        </div>
+            <br>
             <!-- Turnos y resumen -->
             <div class="horario-info">
                 <div class="horario-turnos">
@@ -185,6 +215,7 @@ function mostrarHorario(reservas) {
                         <i class="fas fa-moon"></i> Vespertino 15:20–21:10
                     </span>
                 </div>
+                <br>
                 <div class="horario-resumen">
                     <span class="resumen-bloques"><strong>${ocupados}</strong> de <strong>${totalBloques}</strong> bloques asignados</span>
                     <span class="resumen-turno"><i class="fas fa-clock"></i> Turno ${turnoActivo === 'matutino' ? 'matutino' : 'vespertino'}</span>
@@ -192,7 +223,7 @@ function mostrarHorario(reservas) {
                 </div>
             </div>
         </div>
-        
+        <br>
         <!-- ===== TABLA CON SCROLL ===== -->
         <div class="horario-scroll-wrapper">
             <table class="horario-table">

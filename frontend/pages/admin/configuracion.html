@@ -4,19 +4,31 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Configuración - SIGAE</title>
+    
+    <!-- Meta tags -->
+    <meta name="description" content="Configuración del sistema - SIGAE UTVT">
+    <meta name="theme-color" content="#691c32">
+    
+    <!-- CSS -->
     <link rel="stylesheet" href="/css/main.css">
     <link rel="stylesheet" href="/css/admin.css">
+    <link rel="stylesheet" href="/css/cruds.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 </head>
 <body>
     <div class="dashboard-wrapper">
-        <!-- Top Bar -->
-        <div class="top-bar">
+        <!-- ============================================= -->
+        <!-- TOP BAR                                       -->
+        <!-- ============================================= -->
+        <header class="top-bar" role="banner" aria-label="Encabezado principal">
             <div class="top-bar-left">
                 <div class="top-bar-logos">
-                    <img src="/frontend/img/rectoria_cortada.jpg" alt="Logo UTVT" class="logo">
-                    <span class="separator"></span>
-                    <img src="/frontend/img/utvt_logo.jpg" alt="Logo SIGAE" class="logo">
+                    <img src="/frontend/img/rectoria_cortada.jpg" alt="Logo de la Universidad Tecnológica del Valle de Toluca" class="logo" loading="lazy">
+                    <span class="separator" aria-hidden="true"></span>
+                    <img src="/frontend/img/utvt_logo.jpg" alt="Logo SIGAE" class="logo" loading="lazy">
                 </div>
                 <div class="top-bar-text">
                     <div class="titulo">UTVT · SISTEMA DE GESTIÓN</div>
@@ -24,133 +36,301 @@
                 </div>
             </div>
             <div class="top-bar-right">
+                <div class="notifications" id="notifications">
+                    <i class="fas fa-bell"></i>
+                    <span class="notifications-badge" id="notif-count">0</span>
+                </div>
                 <div class="user-info">
-                    <div class="user-avatar" id="user-avatar"></div>
+                    <div class="user-avatar" id="user-avatar">A</div>
                     <div class="user-name" id="user-name">Cargando...</div>
                 </div>
             </div>
-        </div>
+        </header>
 
         <div class="dashboard-body">
-            <!-- Sidebar -->
-            <div class="sidebar">
+            <!-- ============================================= -->
+            <!-- SIDEBAR                                       -->
+            <!-- ============================================= -->
+            <nav class="sidebar" role="navigation" aria-label="Menú principal">
                 <div class="sidebar-header">
-                    <h2><i class="fas fa-cubes"></i> SIGAE</h2>
-                    <p><i class="fas fa-door-open"></i> Gestión de Aulas</p>
+                    <h2><i class="fas fa-cubes" aria-hidden="true"></i> SIGAE</h2>
+                    <p><i class="fas fa-door-open" aria-hidden="true"></i> Gestión de Aulas</p>
                 </div>
-                <ul class="sidebar-menu">
-                    <li><a href="/dashboard"><i class="fas fa-chart-pie"></i> Dashboard</a></li>
-                    <li><a href="/infraestructura"><i class="fas fa-building"></i> Infraestructura</a></li>
-                    <li><a href="/solicitudes"><i class="fas fa-file-alt"></i> Solicitudes</a></li>
-                    <li><a href="/reportes"><i class="fas fa-chart-bar"></i> Reportes</a></li>
-                    <li class="active"><a href="/admin/configuracion"><i class="fas fa-cogs"></i> Administración</a></li>
-                    <li><a href="#" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Cerrar Sesión</a></li>
+                <ul class="sidebar-menu" role="menubar">
+                    <li role="none">
+                        <a href="/dashboard" role="menuitem">
+                            <i class="fas fa-chart-pie" aria-hidden="true"></i>
+                            <span>Dashboard</span>
+                        </a>
+                    </li>
+                    <li role="none">
+                        <a href="/infraestructura" role="menuitem">
+                            <i class="fas fa-building" aria-hidden="true"></i>
+                            <span>Infraestructura</span>
+                        </a>
+                    </li>
+                    <li role="none">
+                        <a href="/solicitudes" role="menuitem">
+                            <i class="fas fa-file-alt" aria-hidden="true"></i>
+                            <span>Solicitudes</span>
+                        </a>
+                    </li>
+                    <li role="none">
+                        <a href="/reportes" role="menuitem">
+                            <i class="fas fa-chart-bar" aria-hidden="true"></i>
+                            <span>Reportes</span>
+                        </a>
+                    </li>
+                    <li role="none" class="active">
+                        <a href="/admin" role="menuitem" aria-current="page">
+                            <i class="fas fa-cogs" aria-hidden="true"></i>
+                            <span>Administración</span>
+                        </a>
+                    </li>
+                    <li role="none" class="sidebar-divider" aria-hidden="true"></li>
+                    <li role="none">
+                        <a href="#" onclick="logout()" role="menuitem" class="logout-link">
+                            <i class="fas fa-sign-out-alt" aria-hidden="true"></i>
+                            <span>Cerrar Sesión</span>
+                        </a>
+                    </li>
                 </ul>
-            </div>
+            </nav>
 
-            <div class="main-content">
+            <!-- ============================================= -->
+            <!-- CONTENIDO PRINCIPAL                          -->
+            <!-- ============================================= -->
+            <main class="main-content" role="main" aria-label="Contenido principal">
                 <div class="admin-container">
+
+                    <!-- Botón volver -->
                     <a href="/admin" class="btn-back">
-                        <i class="fas fa-arrow-left"></i> Volver al panel de administración
+                        <i class="fas fa-arrow-left" aria-hidden="true"></i>
+                        Volver al panel de administración
                     </a>
                     
-                    <div class="admin-header">
-                        <h2><i class="fas fa-cog"></i> Configuración del Sistema</h2>
+                    <!-- Encabezado -->
+                    <div class="page-header">
+                        <div class="header-text">
+                            <h1>
+                                <i class="fas fa-cog" aria-hidden="true"></i>
+                                Configuración del Sistema
+                            </h1>
+                            <p class="page-description">Administra la configuración global del sistema SIGAE</p>
+                        </div>
+                        <div class="header-actions">
+                            <span class="stats-badge">
+                                <i class="fas fa-clock" aria-hidden="true"></i>
+                                Última actualización: <span id="ultima-actualizacion">--</span>
+                            </span>
+                        </div>
                     </div>
 
-                    <div class="table-container">
-                        <form id="configForm">
-                            <div class="form-group">
-                                <label for="ciclo-actual">Ciclo Cuatrimestral</label>
-                                <select id="ciclo-actual" class="form-control">
-                                    <option value="2025-A">2025-A</option>
-                                    <option value="2025-B">2025-B</option>
-                                    <option value="2025-C">2025-C</option>
-                                    <option value="2026-A">2026-A</option>
-                                    <option value="2026-B">2026-B</option>
-                                    <option value="2026-C">2026-C</option>
-                                    <option value="2027-A">2027-A</option>
-                                    <option value="2027-B">2027-B</option>
-                                    <option value="2027-C">2027-C</option>
-                                </select>
-                                <small style="color: #999; font-size: 0.7rem;">Selecciona el ciclo cuatrimestral actual</small>
+                    <!-- Tarjetas de configuración -->
+                    <div class="config-grid">
+                        <!-- Tarjeta de Ciclo -->
+                        <div class="config-card">
+                            <div class="config-card-header">
+                                <div class="config-card-icon" style="background: #e8f5e9;">
+                                    <i class="fas fa-calendar-alt" aria-hidden="true"></i>
+                                </div>
+                                <h3>Ciclo Cuatrimestral</h3>
                             </div>
-                            <div class="modal-actions" style="margin-top: 20px;">
-                                <button type="submit" class="btn-primary">Guardar Cambios</button>
+                            <div class="config-card-body">
+                                <p class="config-card-description">Selecciona el ciclo cuatrimestral actual para el sistema</p>
+                                <form id="configForm" class="config-form">
+                                    <div class="form-group">
+                                        <label for="ciclo-actual">Ciclo actual</label>
+                                        <div class="select-wrapper">
+                                            <select id="ciclo-actual" class="form-control">
+                                                <option value="2025-A">2025-A</option>
+                                                <option value="2025-B">2025-B</option>
+                                                <option value="2025-C">2025-C</option>
+                                                <option value="2026-A">2026-A</option>
+                                                <option value="2026-B">2026-B</option>
+                                                <option value="2026-C">2026-C</option>
+                                                <option value="2027-A">2027-A</option>
+                                                <option value="2027-B">2027-B</option>
+                                                <option value="2027-C">2027-C</option>
+                                            </select>
+                                            <i class="fas fa-chevron-down select-arrow"></i>
+                                        </div>
+                                        <small class="form-help">Selecciona el ciclo cuatrimestral actual para los reportes y filtros</small>
+                                    </div>
+                                    <button type="submit" class="btn-primary" id="submitBtn">
+                                        <i class="fas fa-save" aria-hidden="true"></i>
+                                        <span id="submitBtnText">Guardar Cambios</span>
+                                    </button>
+                                </form>
                             </div>
-                        </form>
+                        </div>
+
+                        <!-- Tarjeta de Información del Sistema -->
+                        <div class="config-card">
+                            <div class="config-card-header">
+                                <div class="config-card-icon" style="background: #e3f2fd;">
+                                    <i class="fas fa-info-circle" aria-hidden="true"></i>
+                                </div>
+                                <h3>Información del Sistema</h3>
+                            </div>
+                            <div class="config-card-body">
+                                <p class="config-card-description">Detalles de la configuración actual del sistema</p>
+                                <div class="config-info-grid" id="config-info-grid">
+                                    <div class="config-info-item">
+                                        <span class="config-info-label">Ciclo actual</span>
+                                        <span class="config-info-value" id="config-ciclo">--</span>
+                                    </div>
+                                    <div class="config-info-item">
+                                        <span class="config-info-label">Fecha de generación</span>
+                                        <span class="config-info-value" id="config-fecha">--</span>
+                                    </div>
+                                    <div class="config-info-item">
+                                        <span class="config-info-label">Versión del sistema</span>
+                                        <span class="config-info-value">SIGAE v2.1</span>
+                                    </div>
+                                    <div class="config-info-item">
+                                        <span class="config-info-label">Estado</span>
+                                        <span class="config-info-value">
+                                            <span class="badge badge-success">Activo</span>
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
 
-                    <div style="margin-top: 30px;">
-                        <h3><i class="fas fa-info-circle"></i> Información del Sistema</h3>
+                    <!-- Tabla de configuración detallada -->
+                    <div class="config-details">
+                        <h3>
+                            <i class="fas fa-table" aria-hidden="true"></i>
+                            Detalles de Configuración
+                        </h3>
                         <div class="table-container">
-                            <table>
-                                <thead>
-                                    <tr>
-                                        <th>Clave</th>
-                                        <th>Valor</th>
-                                        <th>Descripción</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="config-table">
-                                    <tr>
-                                        <td colspan="3" style="text-align:center;">Cargando configuración...</td>
-                                    </tr>
-                                </tbody>
-                            </table>
+                            <div class="table-responsive">
+                                <table class="data-table" id="configTable" role="table" aria-label="Configuración detallada">
+                                    <thead>
+                                        <tr>
+                                            <th>Clave</th>
+                                            <th>Valor</th>
+                                            <th>Descripción</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="config-table">
+                                        <tr>
+                                            <td colspan="3" class="loading-state">
+                                                <div class="spinner" aria-hidden="true"></div>
+                                                <span>Cargando configuración...</span>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
+            </main>
         </div>
     </div>
 
+    <!-- ============================================= -->
+    <!-- TOAST CONTAINER                              -->
+    <!-- ============================================= -->
+    <div id="toastContainer" class="toast-container" aria-live="polite" aria-atomic="true"></div>
+
+    <!-- ============================================= -->
+    <!-- JAVASCRIPT                                    -->
+    <!-- ============================================= -->
     <script src="/js/main.js"></script>
     <script src="/js/admin/utils.js"></script>
     <script>
         // =====================================================
-        // CARGAR CONFIGURACIÓN
+        // CARGAR CONFIGURACIÓN (TU LÓGICA ORIGINAL MEJORADA)
         // =====================================================
         async function cargarConfiguracion() {
             try {
                 const res = await fetch('/api/config/ciclo');
                 const data = await res.json();
                 
-                if (data.ciclo) {
-                    document.getElementById('ciclo-actual').value = data.ciclo;
+                // Actualizar selector de ciclo
+                const cicloSelect = document.getElementById('ciclo-actual');
+                if (cicloSelect && data.ciclo) {
+                    cicloSelect.value = data.ciclo;
                 }
                 
-                // Mostrar configuración en la tabla
+                // Actualizar información en tarjetas
+                const cicloInfo = document.getElementById('config-ciclo');
+                const fechaInfo = document.getElementById('config-fecha');
+                const ultimaActualizacion = document.getElementById('ultima-actualizacion');
+                
+                if (cicloInfo) cicloInfo.textContent = data.ciclo || 'No definido';
+                if (fechaInfo) fechaInfo.textContent = data.fecha || new Date().toLocaleDateString('es-MX');
+                if (ultimaActualizacion) ultimaActualizacion.textContent = data.fecha || new Date().toLocaleDateString('es-MX');
+                
+                // Mostrar configuración en la tabla (TU LÓGICA ORIGINAL)
                 const tbody = document.getElementById('config-table');
-                tbody.innerHTML = `
-                    <tr>
-                        <td><strong>ciclo_actual</strong></td>
-                        <td>${data.ciclo || 'No definido'}</td>
-                        <td>Ciclo cuatrimestral actual</td>
-                    </tr>
-                    <tr>
-                        <td><strong>fecha_generacion</strong></td>
-                        <td>${data.fecha || new Date().toLocaleDateString('es-MX')}</td>
-                        <td>Fecha de generación de reportes</td>
-                    </tr>
-                `;
+                if (tbody) {
+                    tbody.innerHTML = `
+                        <tr>
+                            <td><strong>ciclo_actual</strong></td>
+                            <td>${data.ciclo || 'No definido'}</td>
+                            <td>Ciclo cuatrimestral actual para reportes y filtros</td>
+                        </tr>
+                        <tr>
+                            <td><strong>fecha_generacion</strong></td>
+                            <td>${data.fecha || new Date().toLocaleDateString('es-MX')}</td>
+                            <td>Fecha de generación de reportes y configuración</td>
+                        </tr>
+                        <tr>
+                            <td><strong>version_sistema</strong></td>
+                            <td>SIGAE v2.1</td>
+                            <td>Versión actual del sistema</td>
+                        </tr>
+                        <tr>
+                            <td><strong>estado_sistema</strong></td>
+                            <td><span class="badge badge-success">Activo</span></td>
+                            <td>Estado operativo del sistema</td>
+                        </tr>
+                    `;
+                }
             } catch (error) {
                 console.error('Error cargando configuración:', error);
-                document.getElementById('config-table').innerHTML = `
-                    <tr>
-                        <td colspan="3" style="text-align:center;color:red;">Error al cargar configuración</td>
-                    </tr>
-                `;
+                const tbody = document.getElementById('config-table');
+                if (tbody) {
+                    tbody.innerHTML = `
+                        <tr>
+                            <td colspan="3" class="loading-state">
+                                <i class="fas fa-exclamation-circle" style="color: #e74c3c; font-size: 2rem; display: block; margin-bottom: 8px;" aria-hidden="true"></i>
+                                <span style="color: #e74c3c;">Error al cargar configuración</span>
+                                <button onclick="cargarConfiguracion()" class="btn-primary" style="margin-top: 10px; padding: 6px 16px; font-size: 0.85rem;">
+                                    <i class="fas fa-sync-alt" aria-hidden="true"></i> Reintentar
+                                </button>
+                            </td>
+                        </tr>
+                    `;
+                }
             }
         }
 
         // =====================================================
-        // ACTUALIZAR CICLO
+        // ACTUALIZAR CICLO (TU LÓGICA ORIGINAL MEJORADA)
         // =====================================================
         document.getElementById('configForm').addEventListener('submit', async function(e) {
             e.preventDefault();
             
             const ciclo = document.getElementById('ciclo-actual').value;
+            const submitBtn = document.getElementById('submitBtn');
+            const submitText = document.getElementById('submitBtnText');
+            
+            if (!ciclo) {
+                showToast('Selecciona un ciclo válido', 'error');
+                return;
+            }
+            
+            // Deshabilitar botón
+            if (submitBtn) {
+                submitBtn.disabled = true;
+                if (submitText) submitText.textContent = 'Guardando...';
+            }
             
             try {
                 const res = await fetch('/api/config/ciclo', {
@@ -169,15 +349,25 @@
             } catch (error) {
                 console.error('Error:', error);
                 showToast('Error de conexión', 'error');
+            } finally {
+                if (submitBtn) {
+                    submitBtn.disabled = false;
+                    if (submitText) submitText.textContent = 'Guardar Cambios';
+                }
             }
         });
 
         // =====================================================
-        // INICIALIZAR
+        // INICIALIZAR (TU LÓGICA ORIGINAL MEJORADA)
         // =====================================================
         document.addEventListener('DOMContentLoaded', function() {
-            mostrarUsuario();
+            if (typeof mostrarUsuario === 'function') {
+                mostrarUsuario();
+            }
+            
             cargarConfiguracion();
+            
+            console.log('⚙️ SIGAE - Configuración inicializada');
         });
     </script>
 </body>

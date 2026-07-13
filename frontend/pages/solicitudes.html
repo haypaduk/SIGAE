@@ -4,20 +4,31 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Solicitudes - SIGAE</title>
+    
+    <!-- Meta tags -->
+    <meta name="description" content="Gestión de solicitudes de espacios - SIGAE UTVT">
+    <meta name="theme-color" content="#691c32">
+    
+    <!-- CSS -->
     <link rel="stylesheet" href="/css/main.css">
     <link rel="stylesheet" href="/css/admin.css">
     <link rel="stylesheet" href="/css/solicitudes.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 </head>
 <body>
     <div class="dashboard-wrapper">
-        <!-- Top Bar -->
-        <div class="top-bar">
+        <!-- ============================================= -->
+        <!-- TOP BAR                                       -->
+        <!-- ============================================= -->
+        <header class="top-bar" role="banner" aria-label="Encabezado principal">
             <div class="top-bar-left">
                 <div class="top-bar-logos">
-                    <img src="/frontend/img/rectoria_cortada.jpg" alt="Logo UTVT" class="logo">
-                    <span class="separator"></span>
-                    <img src="/frontend/img/utvt_logo.jpg" alt="Logo SIGAE" class="logo">
+                    <img src="/frontend/img/rectoria_cortada.jpg" alt="Logo de la Universidad Tecnológica del Valle de Toluca" class="logo" loading="lazy">
+                    <span class="separator" aria-hidden="true"></span>
+                    <img src="/frontend/img/utvt_logo.jpg" alt="Logo SIGAE" class="logo" loading="lazy">
                 </div>
                 <div class="top-bar-text">
                     <div class="titulo">UTVT · SISTEMA DE GESTIÓN</div>
@@ -30,105 +41,275 @@
                     <span class="notifications-badge" id="notif-count">0</span>
                 </div>
                 <div class="user-info">
-                    <div class="user-avatar" id="user-avatar"></div>
+                    <div class="user-avatar" id="user-avatar">A</div>
                     <div class="user-name" id="user-name">Cargando...</div>
                 </div>
             </div>
-        </div>
+        </header>
 
         <div class="dashboard-body">
-            <!-- Sidebar -->
-            <div class="sidebar">
+            <!-- ============================================= -->
+            <!-- SIDEBAR                                       -->
+            <!-- ============================================= -->
+            <nav class="sidebar" role="navigation" aria-label="Menú principal">
                 <div class="sidebar-header">
-                    <h2><i class="fas fa-cubes"></i> SIGAE</h2>
-                    <p><i class="fas fa-door-open"></i> Gestión de Aulas</p>
+                    <h2><i class="fas fa-cubes" aria-hidden="true"></i> SIGAE</h2>
+                    <p><i class="fas fa-door-open" aria-hidden="true"></i> Gestión de Aulas</p>
                 </div>
-                <ul class="sidebar-menu">
-                    <li><a href="/dashboard"><i class="fas fa-chart-pie"></i> Dashboard</a></li>
-                    <li><a href="/infraestructura"><i class="fas fa-building"></i> Infraestructura</a></li>
-                    <li class="active"><a href="/solicitudes"><i class="fas fa-file-alt"></i> Solicitudes</a></li>
-                    <li><a href="/reportes"><i class="fas fa-chart-bar"></i> Reportes</a></li>
-                    <li><a href="#" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Cerrar Sesión</a></li>
+                <ul class="sidebar-menu" role="menubar">
+                    <li role="none">
+                        <a href="/dashboard" role="menuitem">
+                            <i class="fas fa-chart-pie" aria-hidden="true"></i>
+                            <span>Dashboard</span>
+                        </a>
+                    </li>
+                    <li role="none">
+                        <a href="/infraestructura" role="menuitem">
+                            <i class="fas fa-building" aria-hidden="true"></i>
+                            <span>Infraestructura</span>
+                        </a>
+                    </li>
+                    <li role="none" class="active">
+                        <a href="/solicitudes" role="menuitem" aria-current="page">
+                            <i class="fas fa-file-alt" aria-hidden="true"></i>
+                            <span>Solicitudes</span>
+                        </a>
+                    </li>
+                    <li role="none">
+                        <a href="/reportes" role="menuitem">
+                            <i class="fas fa-chart-bar" aria-hidden="true"></i>
+                            <span>Reportes</span>
+                        </a>
+                    </li>
+                    <li role="none" class="sidebar-divider" aria-hidden="true"></li>
+                    <li role="none">
+                        <a href="#" onclick="logout()" role="menuitem" class="logout-link">
+                            <i class="fas fa-sign-out-alt" aria-hidden="true"></i>
+                            <span>Cerrar Sesión</span>
+                        </a>
+                    </li>
                 </ul>
-            </div>
+            </nav>
 
-            <div class="main-content">
+            <!-- ============================================= -->
+            <!-- CONTENIDO PRINCIPAL                          -->
+            <!-- ============================================= -->
+            <main class="main-content" role="main" aria-label="Contenido principal">
                 <div class="solicitudes-container">
-                    <div class="solicitudes-header">
-                        <h2><i class="fas fa-file-alt"></i> Solicitudes de Espacios</h2>
-                        <button class="btn-crear-solicitud" onclick="abrirModalCrear()">
-                            <i class="fas fa-plus"></i> Solicitar Espacio
+
+                    <!-- Encabezado -->
+                    <div class="page-header">
+                        <div class="header-text">
+                            <h1>
+                                <i class="fas fa-file-alt" aria-hidden="true"></i>
+                                Solicitudes de Espacios
+                            </h1>
+                            <p class="page-description">Gestiona las solicitudes de uso de espacios académicos</p>
+                        </div>
+                        <div class="header-actions">
+                            <button class="btn-primary" onclick="abrirModalCrear()" aria-label="Crear nueva solicitud">
+                                <i class="fas fa-plus" aria-hidden="true"></i>
+                                Solicitar Espacio
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Estadísticas rápidas -->
+                    <div class="stats-mini-grid" id="statsSolicitudes">
+                        <div class="stat-mini-card">
+                            <span class="stat-mini-number" id="totalSolicitudes">0</span>
+                            <span class="stat-mini-label">Total solicitudes</span>
+                        </div>
+                        <div class="stat-mini-card">
+                            <span class="stat-mini-number" id="solicitudesPendientes">0</span>
+                            <span class="stat-mini-label">Pendientes</span>
+                        </div>
+                        <div class="stat-mini-card">
+                            <span class="stat-mini-number" id="solicitudesAprobadas">0</span>
+                            <span class="stat-mini-label">Aprobadas</span>
+                        </div>
+                        <div class="stat-mini-card">
+                            <span class="stat-mini-number" id="solicitudesRechazadas">0</span>
+                            <span class="stat-mini-label">Rechazadas</span>
+                        </div>
+                    </div>
+
+                    <!-- Filtros -->
+                    <div class="filtros-solicitudes">
+                        <button class="filtro-btn active" data-filtro="todas" onclick="filtrarSolicitudes('todas')">
+                            <i class="fas fa-list" aria-hidden="true"></i>
+                            Todas
+                        </button>
+                        <button class="filtro-btn" data-filtro="pendiente" onclick="filtrarSolicitudes('pendiente')">
+                            <i class="fas fa-clock" aria-hidden="true"></i>
+                            Pendientes
+                        </button>
+                        <button class="filtro-btn" data-filtro="aprobada" onclick="filtrarSolicitudes('aprobada')">
+                            <i class="fas fa-check-circle" aria-hidden="true"></i>
+                            Aprobadas
+                        </button>
+                        <button class="filtro-btn" data-filtro="rechazada" onclick="filtrarSolicitudes('rechazada')">
+                            <i class="fas fa-times-circle" aria-hidden="true"></i>
+                            Rechazadas
                         </button>
                     </div>
 
+                    <!-- Lista de solicitudes -->
                     <div id="solicitudes-list">
                         <div class="empty-state">
-                            <i class="fas fa-inbox"></i>
-                            <p>Cargando solicitudes...</p>
+                            <i class="fas fa-inbox" aria-hidden="true"></i>
+                            <h3>Cargando solicitudes...</h3>
+                            <p class="sub-text">Por favor espera</p>
                         </div>
                     </div>
                 </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- ============================================= -->
+    <!-- MODAL SOLICITAR ESPACIO (MEJORADO)            -->
+    <!-- ============================================= -->
+    <div class="modal" id="solicitudModal" role="dialog" aria-labelledby="solicitudTitle" aria-modal="true">
+        <div class="modal-content modal-solicitud">
+            <div class="modal-header">
+                <h3 id="solicitudTitle">
+                    <i class="fas fa-pencil-alt" aria-hidden="true"></i>
+                    <span id="modal-title">Solicitar Espacio Externo</span>
+                </h3>
+                <button class="modal-close" onclick="cerrarModal()" aria-label="Cerrar modal">
+                    <i class="fas fa-times" aria-hidden="true"></i>
+                </button>
+            </div>
+            <form id="solicitudForm" novalidate>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="solicitud-edificio">
+                            Edificio <span class="required" aria-hidden="true">*</span>
+                        </label>
+                        <div class="select-wrapper">
+                            <select id="solicitud-edificio" required>
+                                <option value="">Seleccionar edificio</option>
+                            </select>
+                            <i class="fas fa-chevron-down select-arrow"></i>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="solicitud-aula">
+                            Espacio <span class="required" aria-hidden="true">*</span>
+                        </label>
+                        <div class="select-wrapper">
+                            <select id="solicitud-aula" required>
+                                <option value="">Seleccionar espacio...</option>
+                            </select>
+                            <i class="fas fa-chevron-down select-arrow"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="solicitud-dia">
+                            Día <span class="required" aria-hidden="true">*</span>
+                        </label>
+                        <div class="select-wrapper">
+                            <select id="solicitud-dia" required>
+                                <option value="">Seleccionar día</option>
+                                <option value="1">Lunes</option>
+                                <option value="2">Martes</option>
+                                <option value="3">Miércoles</option>
+                                <option value="4">Jueves</option>
+                                <option value="5">Viernes</option>
+                                <option value="6">Sábado</option>
+                            </select>
+                            <i class="fas fa-chevron-down select-arrow"></i>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="solicitud-turno">
+                            Turno <span class="required" aria-hidden="true">*</span>
+                        </label>
+                        <div class="select-wrapper">
+                            <select id="solicitud-turno" required>
+                                <option value="">Seleccionar turno</option>
+                                <option value="1">Matutino (07:00 - 15:20)</option>
+                                <option value="2">Vespertino (15:20 - 21:10)</option>
+                            </select>
+                            <i class="fas fa-chevron-down select-arrow"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="solicitud-bloque">
+                        Bloque horario <span class="required" aria-hidden="true">*</span>
+                    </label>
+                    <div class="select-wrapper">
+                        <select id="solicitud-bloque" required>
+                            <option value="">Seleccionar bloque</option>
+                        </select>
+                        <i class="fas fa-chevron-down select-arrow"></i>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="solicitud-motivo">
+                        Justificación <span class="required" aria-hidden="true">*</span>
+                    </label>
+                    <textarea id="solicitud-motivo" rows="4" placeholder="Describe la razón de la solicitud del espacio externo..." required></textarea>
+                    <small class="form-help">Mínimo 10 caracteres. Describe detalladamente el motivo de tu solicitud.</small>
+                </div>
+
+                <div class="modal-actions">
+                    <button type="button" class="btn-secondary" onclick="cerrarModal()">
+                        <i class="fas fa-times" aria-hidden="true"></i>
+                        Cancelar
+                    </button>
+                    <button type="submit" class="btn-primary" id="solicitudSubmitBtn">
+                        <i class="fas fa-paper-plane" aria-hidden="true"></i>
+                        <span id="solicitudSubmitText">Enviar Solicitud</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- ============================================= -->
+    <!-- MODAL DE CONFIRMACIÓN                        -->
+    <!-- ============================================= -->
+    <div class="modal" id="confirmModal" role="dialog" aria-labelledby="confirmTitle" aria-modal="true">
+        <div class="modal-content modal-sm">
+            <div class="modal-header">
+                <h3 id="confirmTitle">
+                    <i class="fas fa-exclamation-triangle" style="color: #e74c3c;" aria-hidden="true"></i>
+                    Confirmar acción
+                </h3>
+                <button class="modal-close" onclick="cerrarConfirmModal()" aria-label="Cerrar modal">
+                    <i class="fas fa-times" aria-hidden="true"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p id="confirmMessage">¿Estás seguro de que deseas realizar esta acción?</p>
+                <p class="text-muted" id="confirmDetail">Esta acción no se puede deshacer.</p>
+            </div>
+            <div class="modal-actions">
+                <button type="button" class="btn-secondary" onclick="cerrarConfirmModal()">Cancelar</button>
+                <button type="button" class="btn-danger" id="confirmActionBtn">
+                    <i class="fas fa-check" aria-hidden="true"></i>
+                    Confirmar
+                </button>
             </div>
         </div>
     </div>
 
     <!-- ============================================= -->
-    <!-- MODAL SOLICITAR ESPACIO (ACTUALIZADO)         -->
+    <!-- TOAST CONTAINER                              -->
     <!-- ============================================= -->
-    <div class="modal" id="solicitudModal">
-        <div class="modal-content" style="max-width: 550px;">
-            <h3><i class="fas fa-pencil-alt"></i> Solicitar Espacio Externo</h3>
-            <form id="solicitudForm">
-                <div class="form-group">
-                    <label for="solicitud-edificio">Edificio</label>
-                    <select id="solicitud-edificio" required>
-                        <option value="">Seleccionar edificio</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label for="solicitud-aula">Espacio</label>
-                    <select id="solicitud-aula" required>
-                        <option value="">Seleccionar espacio...</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label for="solicitud-dia">Día</label>
-                    <select id="solicitud-dia" required>
-                        <option value="">Seleccionar día</option>
-                        <option value="1">Lunes</option>
-                        <option value="2">Martes</option>
-                        <option value="3">Miércoles</option>
-                        <option value="4">Jueves</option>
-                        <option value="5">Viernes</option>
-                        <option value="6">Sábado</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label for="solicitud-turno">Turno</label>
-                    <select id="solicitud-turno" required>
-                        <option value="">Seleccionar turno</option>
-                        <option value="1">Matutino (07:00 - 15:20)</option>
-                        <option value="2">Vespertino (15:20 - 21:10)</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label for="solicitud-bloque">Bloque horario</label>
-                    <select id="solicitud-bloque" required>
-                        <option value="">Seleccionar bloque</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label for="solicitud-motivo">Justificación</label>
-                    <textarea id="solicitud-motivo" rows="4" placeholder="Describe la razón de la solicitud del espacio externo..." required></textarea>
-                </div>
-                <div class="modal-actions">
-                    <button type="button" class="btn-secondary" onclick="cerrarModal()">Cancelar</button>
-                    <button type="submit" class="btn-primary">Enviar Solicitud</button>
-                </div>
-            </form>
-        </div>
-    </div>    
+    <div id="toastContainer" class="toast-container" aria-live="polite" aria-atomic="true"></div>
 
+    <!-- ============================================= -->
+    <!-- JAVASCRIPT                                    -->
+    <!-- ============================================= -->
     <script src="/js/main.js"></script>
     <script src="/js/admin/utils.js"></script>
     <script src="/js/solicitudes.js"></script>

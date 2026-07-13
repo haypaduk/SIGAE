@@ -4,19 +4,31 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gestionar Directores - SIGAE</title>
+    
+    <!-- Meta tags -->
+    <meta name="description" content="Gestión de directores - SIGAE UTVT">
+    <meta name="theme-color" content="#691c32">
+    
+    <!-- CSS -->
     <link rel="stylesheet" href="/css/main.css">
     <link rel="stylesheet" href="/css/admin.css">
+    <link rel="stylesheet" href="/css/cruds.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 </head>
 <body>
     <div class="dashboard-wrapper">
-        <!-- Top Bar -->
-        <div class="top-bar">
+        <!-- ============================================= -->
+        <!-- TOP BAR                                       -->
+        <!-- ============================================= -->
+        <header class="top-bar" role="banner" aria-label="Encabezado principal">
             <div class="top-bar-left">
                 <div class="top-bar-logos">
-                    <img src="/frontend/img/rectoria_cortada.jpg" alt="Logo UTVT" class="logo">
-                    <span class="separator"></span>
-                    <img src="/frontend/img/utvt_logo.jpg" alt="Logo SIGAE" class="logo">
+                    <img src="/frontend/img/rectoria_cortada.jpg" alt="Logo de la Universidad Tecnológica del Valle de Toluca" class="logo" loading="lazy">
+                    <span class="separator" aria-hidden="true"></span>
+                    <img src="/frontend/img/utvt_logo.jpg" alt="Logo SIGAE" class="logo" loading="lazy">
                 </div>
                 <div class="top-bar-text">
                     <div class="titulo">UTVT · SISTEMA DE GESTIÓN</div>
@@ -24,125 +36,363 @@
                 </div>
             </div>
             <div class="top-bar-right">
+                <div class="notifications" id="notifications">
+                    <i class="fas fa-bell"></i>
+                    <span class="notifications-badge" id="notif-count">0</span>
+                </div>
                 <div class="user-info">
-                    <div class="user-avatar" id="user-avatar"></div>
+                    <div class="user-avatar" id="user-avatar">A</div>
                     <div class="user-name" id="user-name">Cargando...</div>
                 </div>
             </div>
-        </div>
+        </header>
 
         <div class="dashboard-body">
-            <!-- Sidebar -->
-            <div class="sidebar">
+            <!-- ============================================= -->
+            <!-- SIDEBAR                                       -->
+            <!-- ============================================= -->
+            <nav class="sidebar" role="navigation" aria-label="Menú principal">
                 <div class="sidebar-header">
-                    <h2><i class="fas fa-cubes"></i> SIGAE</h2>
-                    <p><i class="fas fa-door-open"></i> Gestión de Aulas</p>
+                    <h2><i class="fas fa-cubes" aria-hidden="true"></i> SIGAE</h2>
+                    <p><i class="fas fa-door-open" aria-hidden="true"></i> Gestión de Aulas</p>
                 </div>
-                <ul class="sidebar-menu">
-                    <li><a href="/dashboard"><i class="fas fa-chart-pie"></i> Dashboard</a></li>
-                    <li><a href="/infraestructura"><i class="fas fa-building"></i> Infraestructura</a></li>
-                    <li><a href="/solicitudes"><i class="fas fa-file-alt"></i> Solicitudes</a></li>
-                    <li><a href="/reportes"><i class="fas fa-chart-bar"></i> Reportes</a></li>
-                    <li class="active"><a href="/admin/directores"><i class="fas fa-cogs"></i> Administración</a></li>
-                    <li><a href="#" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Cerrar Sesión</a></li>
+                <ul class="sidebar-menu" role="menubar">
+                    <li role="none">
+                        <a href="/dashboard" role="menuitem">
+                            <i class="fas fa-chart-pie" aria-hidden="true"></i>
+                            <span>Dashboard</span>
+                        </a>
+                    </li>
+                    <li role="none">
+                        <a href="/infraestructura" role="menuitem">
+                            <i class="fas fa-building" aria-hidden="true"></i>
+                            <span>Infraestructura</span>
+                        </a>
+                    </li>
+                    <li role="none">
+                        <a href="/solicitudes" role="menuitem">
+                            <i class="fas fa-file-alt" aria-hidden="true"></i>
+                            <span>Solicitudes</span>
+                        </a>
+                    </li>
+                    <li role="none">
+                        <a href="/reportes" role="menuitem">
+                            <i class="fas fa-chart-bar" aria-hidden="true"></i>
+                            <span>Reportes</span>
+                        </a>
+                    </li>
+                    <li role="none" class="active">
+                        <a href="/admin" role="menuitem" aria-current="page">
+                            <i class="fas fa-cogs" aria-hidden="true"></i>
+                            <span>Administración</span>
+                        </a>
+                    </li>
+                    <li role="none" class="sidebar-divider" aria-hidden="true"></li>
+                    <li role="none">
+                        <a href="#" onclick="logout()" role="menuitem" class="logout-link">
+                            <i class="fas fa-sign-out-alt" aria-hidden="true"></i>
+                            <span>Cerrar Sesión</span>
+                        </a>
+                    </li>
                 </ul>
-            </div>
+            </nav>
 
-            <div class="main-content">
+            <!-- ============================================= -->
+            <!-- CONTENIDO PRINCIPAL                          -->
+            <!-- ============================================= -->
+            <main class="main-content" role="main" aria-label="Contenido principal">
                 <div class="admin-container">
+
+                    <!-- Botón volver -->
                     <a href="/admin" class="btn-back">
-                        <i class="fas fa-arrow-left"></i> Volver al panel de administración
+                        <i class="fas fa-arrow-left" aria-hidden="true"></i>
+                        Volver al panel de administración
                     </a>
                     
-                    <div class="admin-header">
-                        <h2><i class="fas fa-user-tie"></i> Gestión de Directores</h2>
-                        <button class="btn-primary" onclick="abrirModalCrear()">
-                            <i class="fas fa-plus"></i> Nuevo Director
-                        </button>
+                    <!-- Encabezado -->
+                    <div class="page-header">
+                        <div class="header-text">
+                            <h1>
+                                <i class="fas fa-user-tie" aria-hidden="true"></i>
+                                Gestión de Directores
+                            </h1>
+                            <p class="page-description">Administra los directores y coordinadores de carrera</p>
+                        </div>
+                        <div class="header-actions">
+                            <button class="btn-primary" onclick="abrirModalCrear()" aria-label="Crear nuevo director">
+                                <i class="fas fa-plus" aria-hidden="true"></i>
+                                Nuevo Director
+                            </button>
+                        </div>
                     </div>
 
+                    <!-- Estadísticas rápidas -->
+                    <div class="stats-mini-grid">
+                        <div class="stat-mini-card">
+                            <span class="stat-mini-number" id="totalDirectores">0</span>
+                            <span class="stat-mini-label">Total directores</span>
+                        </div>
+                        <div class="stat-mini-card">
+                            <span class="stat-mini-number" id="directoresActivos">0</span>
+                            <span class="stat-mini-label">Directores activos</span>
+                        </div>
+                        <div class="stat-mini-card">
+                            <span class="stat-mini-number" id="directoresInactivos">0</span>
+                            <span class="stat-mini-label">Directores inactivos</span>
+                        </div>
+                    </div>
+
+                    <!-- Barra de búsqueda y filtros -->
+                    <div class="table-toolbar">
+                        <div class="search-wrapper">
+                            <i class="fas fa-search search-icon" aria-hidden="true"></i>
+                            <input 
+                                type="text" 
+                                id="searchDirector" 
+                                placeholder="Buscar por nombre o email..." 
+                                aria-label="Buscar directores"
+                                class="search-input"
+                            >
+                        </div>
+                        <div class="table-actions" role="toolbar" aria-label="Filtros de directores">
+                            <button class="btn-filter active" data-filter="todos" aria-pressed="true">
+                                <i class="fas fa-list" aria-hidden="true"></i>
+                                Todos
+                            </button>
+                            <button class="btn-filter" data-filter="activos" aria-pressed="false">
+                                <i class="fas fa-check-circle" aria-hidden="true"></i>
+                                Activos
+                            </button>
+                            <button class="btn-filter" data-filter="inactivos" aria-pressed="false">
+                                <i class="fas fa-times-circle" aria-hidden="true"></i>
+                                Inactivos
+                            </button>
+                            <button class="btn-filter" data-filter="director" aria-pressed="false">
+                                <i class="fas fa-user-tie" aria-hidden="true"></i>
+                                Directores
+                            </button>
+                            <button class="btn-filter" data-filter="admin" aria-pressed="false">
+                                <i class="fas fa-crown" aria-hidden="true"></i>
+                                Administradores
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Tabla de directores -->
                     <div class="table-container">
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th>Nombre</th>
-                                    <th>Email</th>
-                                    <th>Rol</th>
-                                    <th>Carreras</th>
-                                    <th>Estado</th>
-                                    <th>Acciones</th>
-                                </tr>
-                            </thead>
-                            <tbody id="directores-table">
-                                <tr>
-                                    <td colspan="6" style="text-align:center;">Cargando directores...</td>
-                                </tr>
-                            </tbody>
-                        </table>
+                        <div class="table-responsive">
+                            <table class="data-table" id="directoresTable" role="table" aria-label="Lista de directores">
+                                <thead>
+                                    <tr>
+                                        <th>Nombre</th>
+                                        <th>Email</th>
+                                        <th>Rol</th>
+                                        <th>Carreras</th>
+                                        <th>Estado</th>
+                                        <th class="actions-col">Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="directores-table">
+                                    <tr>
+                                        <td colspan="6" class="loading-state">
+                                            <div class="spinner" aria-hidden="true"></div>
+                                            <span>Cargando directores...</span>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- Paginación -->
+                        <div class="table-footer">
+                            <div class="table-info">
+                                Mostrando <span id="inicioRegistro">0</span> - <span id="finRegistro">0</span> de <span id="totalRegistros">0</span> directores
+                            </div>
+                            <div class="pagination">
+                                <button class="page-btn" id="prevPage" disabled aria-label="Página anterior">
+                                    <i class="fas fa-chevron-left" aria-hidden="true"></i>
+                                </button>
+                                <span class="page-info" id="pageInfo">Página 1</span>
+                                <button class="page-btn" id="nextPage" aria-label="Página siguiente">
+                                    <i class="fas fa-chevron-right" aria-hidden="true"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Estado vacío (oculto por defecto) -->
+                    <div class="empty-state" id="emptyState" style="display: none;">
+                        <i class="fas fa-user-tie empty-icon" aria-hidden="true"></i>
+                        <h3>No hay directores registrados</h3>
+                        <p>Comienza creando tu primer director</p>
+                        <button class="btn-primary" onclick="abrirModalCrear()">
+                            <i class="fas fa-plus" aria-hidden="true"></i>
+                            Crear primer director
+                        </button>
                     </div>
                 </div>
-            </div>
+            </main>
         </div>
     </div>
 
     <!-- ============================================= -->
     <!-- MODAL CREAR/EDITAR DIRECTOR                   -->
     <!-- ============================================= -->
-    <div class="modal" id="directorModal">
-        <div class="modal-content compact" style="max-width: 550px;">
-            <h3 id="modal-title">Nuevo Director</h3>
-            <form id="directorForm">
+    <div class="modal" id="directorModal" role="dialog" aria-labelledby="modalTitle" aria-modal="true">
+        <div class="modal-content" style="max-width: 580px;">
+            <div class="modal-header">
+                <h3 id="modalTitle">
+                    <i class="fas fa-user-tie" aria-hidden="true"></i>
+                    <span id="modal-title">Nuevo Director</span>
+                </h3>
+                <button class="modal-close" onclick="cerrarModal()" aria-label="Cerrar modal">
+                    <i class="fas fa-times" aria-hidden="true"></i>
+                </button>
+            </div>
+            <form id="directorForm" novalidate>
                 <input type="hidden" id="director-id">
+                
                 <div class="form-group">
-                    <label for="director-nombre">Nombre completo</label>
-                    <input type="text" id="director-nombre" placeholder="Ej: Dr. Juan Pérez" required>
+                    <label for="director-nombre">
+                        Nombre completo
+                        <span class="required" aria-hidden="true">*</span>
+                    </label>
+                    <input 
+                        type="text" 
+                        id="director-nombre" 
+                        placeholder="Ej: Dr. Juan Pérez" 
+                        required
+                        maxlength="100"
+                    >
                 </div>
+                
                 <div class="form-group">
-                    <label for="director-email">Correo electrónico</label>
-                    <input type="email" id="director-email" placeholder="ejemplo@utvtol.edu.mx" required>
+                    <label for="director-email">
+                        Correo electrónico
+                        <span class="required" aria-hidden="true">*</span>
+                    </label>
+                    <input 
+                        type="email" 
+                        id="director-email" 
+                        placeholder="ejemplo@utvtol.edu.mx" 
+                        required
+                        maxlength="100"
+                    >
                 </div>
+                
                 <div class="form-group" id="password-group">
-                    <label for="director-password">Contraseña</label>
-                    <input type="password" id="director-password" placeholder="••••••••">
-                    <small>Solo para nuevos directores (déjalo vacío si no quieres cambiarla)</small>
+                    <label for="director-password">
+                        Contraseña
+                        <span class="required" id="password-required" aria-hidden="true">*</span>
+                    </label>
+                    <input 
+                        type="password" 
+                        id="director-password" 
+                        placeholder="••••••••"
+                        minlength="6"
+                        aria-describedby="passwordHelp"
+                    >
+                    <small id="passwordHelp" class="form-help">Mínimo 6 caracteres. Solo para nuevos directores (déjalo vacío si no quieres cambiarla)</small>
                 </div>
+                
                 <div class="form-group">
                     <label for="director-foto">Foto de perfil</label>
-                    <input type="file" id="director-foto" accept="image/*">
-                    <small style="color: #999; font-size: 0.7rem;">Formatos permitidos: JPG, PNG, GIF (máx. 2MB)</small>
-                    <div id="foto-preview" style="margin-top: 8px;">
+                    <div class="file-upload-wrapper">
+                        <input type="file" id="director-foto" accept="image/*">
+                        <label for="director-foto" class="file-upload-label">
+                            <i class="fas fa-upload" aria-hidden="true"></i>
+                            Seleccionar foto
+                        </label>
+                    </div>
+                    <small class="form-help">Formatos permitidos: JPG, PNG, GIF (máx. 2MB)</small>
+                    <div id="foto-preview" style="margin-top: 10px;">
                         <!-- Aquí se mostrará la vista previa de la foto -->
                     </div>
                 </div>
-                <div class="form-group">
-                    <label for="director-rol">Rol</label>
-                    <select id="director-rol">
-                        <option value="director">Director</option>
-                        <option value="admin">Administrador</option>
-                    </select>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="director-rol">Rol</label>
+                        <div class="select-wrapper">
+                            <select id="director-rol">
+                                <option value="director">Director</option>
+                                <option value="admin">Administrador</option>
+                            </select>
+                            <i class="fas fa-chevron-down select-arrow"></i>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="director-activo">Estado</label>
+                        <div class="select-wrapper">
+                            <select id="director-activo">
+                                <option value="1">Activo</option>
+                                <option value="0">Inactivo</option>
+                            </select>
+                            <i class="fas fa-chevron-down select-arrow"></i>
+                        </div>
+                    </div>
                 </div>
+                
                 <div class="form-group" id="carreras-group">
                     <label for="director-carreras">Carreras asociadas</label>
-                    <select id="director-carreras" multiple style="height: 80px;">
-                        <!-- Se llena con JS -->
-                    </select>
-                    <small>Mantén presionado Ctrl para seleccionar varias carreras</small>
+                    <div class="select-wrapper multiple">
+                        <select id="director-carreras" multiple style="height: 80px;">
+                            <!-- Se llena con JS -->
+                        </select>
+                    </div>
+                    <small class="form-help">Mantén presionado Ctrl/Cmd para seleccionar varias carreras</small>
                 </div>
-                <div class="form-group">
-                    <label for="director-activo">Estado</label>
-                    <select id="director-activo">
-                        <option value="1">Activo</option>
-                        <option value="0">Inactivo</option>
-                    </select>
-                </div>
+                
                 <div class="modal-actions">
-                    <button type="button" class="btn-secondary" onclick="cerrarModal()">Cancelar</button>
-                    <button type="submit" class="btn-primary">Guardar</button>
+                    <button type="button" class="btn-secondary" onclick="cerrarModal()">
+                        <i class="fas fa-times" aria-hidden="true"></i>
+                        Cancelar
+                    </button>
+                    <button type="submit" class="btn-primary" id="submitBtn">
+                        <i class="fas fa-save" aria-hidden="true"></i>
+                        <span id="submitBtnText">Guardar</span>
+                    </button>
                 </div>
             </form>
         </div>
     </div>
 
+    <!-- ============================================= -->
+    <!-- MODAL DE CONFIRMACIÓN                        -->
+    <!-- ============================================= -->
+    <div class="modal" id="confirmModal" role="dialog" aria-labelledby="confirmTitle" aria-modal="true">
+        <div class="modal-content modal-sm">
+            <div class="modal-header">
+                <h3 id="confirmTitle">
+                    <i class="fas fa-exclamation-triangle" style="color: #e74c3c;" aria-hidden="true"></i>
+                    Confirmar acción
+                </h3>
+                <button class="modal-close" onclick="cerrarConfirmModal()" aria-label="Cerrar modal">
+                    <i class="fas fa-times" aria-hidden="true"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p id="confirmMessage">¿Estás seguro de que deseas realizar esta acción?</p>
+                <p class="text-muted" id="confirmDetail">Esta acción no se puede deshacer.</p>
+            </div>
+            <div class="modal-actions">
+                <button type="button" class="btn-secondary" onclick="cerrarConfirmModal()">Cancelar</button>
+                <button type="button" class="btn-danger" id="confirmActionBtn">
+                    <i class="fas fa-check" aria-hidden="true"></i>
+                    Confirmar
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================================= -->
+    <!-- TOAST CONTAINER                              -->
+    <!-- ============================================= -->
+    <div id="toastContainer" class="toast-container" aria-live="polite" aria-atomic="true"></div>
+
+    <!-- ============================================= -->
+    <!-- JAVASCRIPT                                    -->
+    <!-- ============================================= -->
     <script src="/js/main.js"></script>
     <script src="/js/admin/utils.js"></script>
     <script src="/js/admin/directores.js"></script>

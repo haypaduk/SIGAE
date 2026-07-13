@@ -5,19 +5,29 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard - SIGAE</title>
     
+    <!-- Meta tags -->
+    <meta name="description" content="Dashboard del Sistema de Gestión de Aulas y Espacios">
+    <meta name="theme-color" content="#691c32">
+    
+    <!-- CSS -->
     <link rel="stylesheet" href="/css/main.css">
     <link rel="stylesheet" href="/css/dashboard.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 </head>
 <body>
     <div class="dashboard-wrapper">
-        <!-- Top Bar -->
-        <div class="top-bar">
+        <!-- ============================================= -->
+        <!-- TOP BAR                                       -->
+        <!-- ============================================= -->
+        <header class="top-bar" role="banner" aria-label="Encabezado principal">
             <div class="top-bar-left">
                 <div class="top-bar-logos">
-                    <img src="/frontend/img/rectoria_cortada.jpg" alt="Logo UTVT" class="logo">
-                    <span class="separator"></span>
-                    <img src="/frontend/img/utvt_logo.jpg" alt="Logo SIGAE" class="logo">
+                    <img src="/frontend/img/rectoria_cortada.jpg" alt="Logo de la Universidad Tecnológica del Valle de Toluca" class="logo" loading="lazy">
+                    <span class="separator" aria-hidden="true"></span>
+                    <img src="/frontend/img/utvt_logo.jpg" alt="Logo SIGAE" class="logo" loading="lazy">
                 </div>
                 <div class="top-bar-text">
                     <div class="titulo">UTVT · SISTEMA DE GESTIÓN</div>
@@ -30,30 +40,75 @@
                     <span class="notifications-badge" id="notif-count">0</span>
                 </div>
                 <div class="user-info">
-                    <div class="user-avatar" id="user-avatar"></div>
+                    <div class="user-avatar" id="user-avatar">A</div>
                     <div class="user-name" id="user-name">Cargando...</div>
                 </div>
             </div>
-        </div>
+        </header>
 
-        <!-- Sidebar + Contenido -->
+        <!-- ============================================= -->
+        <!-- SIDEBAR + CONTENIDO                           -->
+        <!-- ============================================= -->
         <div class="dashboard-body">
-            <div class="sidebar">
+            <!-- Sidebar -->
+            <nav class="sidebar" role="navigation" aria-label="Menú principal">
                 <div class="sidebar-header">
-                    <h2><i class="fas fa-cubes"></i> SIGAE</h2>
-                    <p><i class="fas fa-door-open"></i> Gestión de Aulas</p>
+                    <h2><i class="fas fa-cubes" aria-hidden="true"></i> SIGAE</h2>
+                    <p><i class="fas fa-door-open" aria-hidden="true"></i> Gestión de Aulas</p>
                 </div>
-                <ul class="sidebar-menu">
-                    <li><a href="/dashboard"><i class="fas fa-chart-pie"></i> Dashboard</a></li>
-                    <li><a href="/infraestructura"><i class="fas fa-building"></i> Infraestructura</a></li>
-                    <li><a href="/solicitudes"><i class="fas fa-file-alt"></i> Solicitudes</a></li>
-                    <li><a href="/reportes"><i class="fas fa-chart-bar"></i> Reportes</a></li>
-                    <li><a href="#" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Cerrar Sesión</a></li>
+                <ul class="sidebar-menu" role="menubar">
+                    <li role="none" class="active">
+                        <a href="/dashboard" role="menuitem" aria-current="page">
+                            <i class="fas fa-chart-pie" aria-hidden="true"></i>
+                            <span>Dashboard</span>
+                        </a>
+                    </li>
+                    <li role="none">
+                        <a href="/infraestructura" role="menuitem">
+                            <i class="fas fa-building" aria-hidden="true"></i>
+                            <span>Infraestructura</span>
+                        </a>
+                    </li>
+                    <li role="none">
+                        <a href="/solicitudes" role="menuitem">
+                            <i class="fas fa-file-alt" aria-hidden="true"></i>
+                            <span>Solicitudes</span>
+                        </a>
+                    </li>
+                    <li role="none">
+                        <a href="/reportes" role="menuitem">
+                            <i class="fas fa-chart-bar" aria-hidden="true"></i>
+                            <span>Reportes</span>
+                        </a>
+                    </li>
+                    <li role="none" class="sidebar-divider" aria-hidden="true"></li>
+                    <li role="none">
+                        <a href="#" onclick="logout()" role="menuitem" class="logout-link">
+                            <i class="fas fa-sign-out-alt" aria-hidden="true"></i>
+                            <span>Cerrar Sesión</span>
+                        </a>
+                    </li>
                 </ul>
-            </div>
+            </nav>
 
-            <div class="main-content">
+            <!-- ============================================= -->
+            <!-- CONTENIDO PRINCIPAL                          -->
+            <!-- ============================================= -->
+            <main class="main-content" role="main" aria-label="Contenido principal">
                 <div class="content">
+
+                    <!-- Encabezado de página -->
+                    <div class="page-header">
+                        <div class="header-text">
+                            <h1>
+                                <i class="fas fa-chart-pie" aria-hidden="true"></i>
+                                Dashboard General
+                            </h1>
+                            <p class="page-description">Resumen de ocupación de espacios académicos</p>
+                        </div>
+                        <br>
+                    </div>
+                    <br>
                     <!-- Tarjetas de estadísticas -->
                     <div class="stats-grid" id="stats-grid">
                         <div class="stat-card">Cargando estadísticas...</div>
@@ -62,13 +117,21 @@
                     <!-- Ocupación por Edificio + Ocupación Global -->
                     <div class="ocupacion-container">
                         <div class="ocupacion-card">
-                            <h3><i class="fas fa-building"></i> Ocupación por Edificio</h3>
-                            <div id="ocupacion-edificios"><p>Cargando...</p></div>
+                            <h3><i class="fas fa-building" aria-hidden="true"></i> Ocupación por Edificio</h3>
+                            <div id="ocupacion-edificios">
+                                <div class="empty-state-dashboard" style="padding: 20px;">
+                                    <i class="fas fa-spinner fa-spin" style="font-size: 1.5rem;"></i>
+                                    <p style="margin-top: 8px;">Cargando datos...</p>
+                                </div>
+                            </div>
                         </div>
                         
-                        <!-- Ocupación Global (Círculo) - TARJETA DINÁMICA -->
+                        <!-- Ocupación Global (Círculo) -->
                         <div class="ocupacion-card" style="background: linear-gradient(135deg, #8B1C2A 0%, #6B1520 100%); color: white; padding: 20px; border-radius: 10px;">
-                            <h3 style="color: rgba(255,255,255,0.9);"><i class="fas fa-chart-pie" style="color: rgba(255,255,255,0.8);"></i> Ocupación Global</h3>
+                            <h3 style="color: rgba(255,255,255,0.9);">
+                                <i class="fas fa-chart-pie" style="color: rgba(255,255,255,0.8);" aria-hidden="true"></i>
+                                Ocupación Global
+                            </h3>
                             <div class="global-occupancy-content">
                                 <div class="circle-container">
                                     <div class="circle-progress" style="background: conic-gradient(#27ae60 0% 0%, rgba(255,255,255,0.15) 0% 100%);">
@@ -77,17 +140,17 @@
                                 </div>
                                 <div class="status-indicators">
                                     <div class="status-item">
-                                        <span class="status-dot green"></span>
+                                        <span class="status-dot green" aria-hidden="true"></span>
                                         <span class="status-label">Disponibles</span>
                                         <span class="status-number green-text" id="disponibles-count">0</span>
                                     </div>
                                     <div class="status-item">
-                                        <span class="status-dot orange"></span>
+                                        <span class="status-dot orange" aria-hidden="true"></span>
                                         <span class="status-label">Uso parcial</span>
                                         <span class="status-number orange-text" id="parcial-count">0</span>
                                     </div>
                                     <div class="status-item">
-                                        <span class="status-dot red"></span>
+                                        <span class="status-dot red" aria-hidden="true"></span>
                                         <span class="status-label">Alta demanda</span>
                                         <span class="status-number red-text" id="ocupados-count">0</span>
                                     </div>
@@ -99,16 +162,26 @@
                     <!-- Listas de aulas -->
                     <div class="lists-container">
                         <div class="list-card">
-                            <h3><i class="fas fa-fire"></i> Alta Demanda</h3>
-                            <div id="alta-demanda-list"><p>Cargando...</p></div>
+                            <h3><i class="fas fa-fire" aria-hidden="true"></i> Alta Demanda</h3>
+                            <div id="alta-demanda-list">
+                                <div class="empty-state-dashboard" style="padding: 20px;">
+                                    <i class="fas fa-spinner fa-spin" style="font-size: 1.5rem;"></i>
+                                    <p style="margin-top: 8px;">Cargando datos...</p>
+                                </div>
+                            </div>
                         </div>
                         <div class="list-card">
-                            <h3><i class="fas fa-exclamation-triangle"></i> Espacios Subutilizados</h3>
-                            <div id="subutilizadas-list"><p>Cargando...</p></div>
+                            <h3><i class="fas fa-exclamation-triangle" aria-hidden="true"></i> Espacios Subutilizados</h3>
+                            <div id="subutilizadas-list">
+                                <div class="empty-state-dashboard" style="padding: 20px;">
+                                    <i class="fas fa-spinner fa-spin" style="font-size: 1.5rem;"></i>
+                                    <p style="margin-top: 8px;">Cargando datos...</p>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
+            </main>
         </div>
     </div>
 

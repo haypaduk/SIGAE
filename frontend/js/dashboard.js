@@ -6,6 +6,7 @@
  * - Cargar estadísticas desde el servidor
  * - Mostrar tarjetas de datos
  * - Cargar listas de alta demanda y subutilizadas
+ * - Animaciones y mejoras UI/UX
  */
 
 // =====================================================
@@ -13,6 +14,9 @@
 // =====================================================
 async function cargarDashboard() {
     try {
+        // Mostrar loading
+        mostrarLoading(true);
+        
         // Obtener el usuario autenticado
         const userStr = localStorage.getItem('user');
         const user = userStr ? JSON.parse(userStr) : null;
@@ -21,7 +25,8 @@ async function cargarDashboard() {
         const res = await fetch('/api/dashboard/stats', {
             method: 'GET',
             headers: {
-                'X-User-Id': user ? user.id : '1'  // Enviar ID del usuario
+                'X-User-Id': user ? user.id : '1',
+                'Cache-Control': 'no-cache'
             }
         });
         const data = await res.json();
@@ -42,10 +47,37 @@ async function cargarDashboard() {
             actualizarOcupacionEdificios(data.ocupacion_edificios);
         }
         
+        mostrarLoading(false);
+        
     } catch (error) {
         console.error('Error cargando dashboard:', error);
-        document.getElementById('stats-grid').innerHTML = 
-            '<div class="stat-card">❌ Error al cargar datos</div>';
+        mostrarLoading(false);
+        document.getElementById('stats-grid').innerHTML = `
+            <div class="stat-card" style="grid-column: 1 / -1; text-align: center; padding: 40px;">
+                <h3><i class="fas fa-exclamation-circle" style="color: #e74c3c;"></i> Error al cargar datos</h3>
+                <p style="color: #999; margin-top: 10px;">${error.message || 'Error de conexión con el servidor'}</p>
+                <button onclick="cargarDashboard()" class="btn-primary" style="margin-top: 15px; padding: 8px 20px;">
+                    <i class="fas fa-sync-alt"></i> Reintentar
+                </button>
+            </div>
+        `;
+    }
+}
+
+// =====================================================
+// MOSTRAR LOADING
+// =====================================================
+function mostrarLoading(show) {
+    const grid = document.getElementById('stats-grid');
+    if (!grid) return;
+    
+    if (show && !grid.querySelector('.loading-state')) {
+        grid.innerHTML = `
+            <div class="stat-card loading-state" style="grid-column: 1 / -1; text-align: center; padding: 40px;">
+                <div class="spinner" style="display: inline-block; width: 40px; height: 40px; border: 4px solid #f1f3f5; border-top-color: #8B1C2A; border-radius: 50%; animation: spin 0.8s linear infinite;"></div>
+                <p style="color: #999; margin-top: 12px;">Cargando datos...</p>
+            </div>
+        `;
     }
 }
 
@@ -60,25 +92,27 @@ function actualizarTarjetas(stats) {
     if (!stats || stats.total_espacios === 0) {
         grid.innerHTML = `
             <div class="stat-card" style="grid-column: 1 / -1; text-align: center; padding: 40px;">
-                <h3>📊 Sin datos disponibles</h3>
-                <p style="color: #999; margin-top: 10px;">No hay aulas registradas en tu carrera.</p>
-                <p style="color: #999; font-size: 0.9rem;">Contacta al administrador para asignar aulas a tu carrera.</p>
+                <div class="empty-state-dashboard">
+                    <i class="fas fa-building"></i>
+                    <h4>Sin datos disponibles</h4>
+                    <p>No hay aulas registradas en tu carrera.</p>
+                    <p style="font-size: 0.85rem; color: #adb5bd;">Contacta al administrador para asignar aulas a tu carrera.</p>
+                </div>
             </div>
         `;
         
         // Resetear la tarjeta de ocupación global
-        document.getElementById('global-percentage').textContent = '0%';
-        document.getElementById('disponibles-count').textContent = '0';
-        document.getElementById('parcial-count').textContent = '0';
-        document.getElementById('ocupados-count').textContent = '0';
+        actualizarGlobal(0, 0, 0, 0);
         return;
     }
     
     const esAdmin = stats.total_edificios !== undefined;
     
+    let html = '';
+    
     if (esAdmin) {
-        // ADMIN
-        grid.innerHTML = `
+        // ADMIN - 4 tarjetas
+        html = `
             <div class="stat-card">
                 <h3><i class="fas fa-building"></i> Total Espacios</h3>
                 <div class="stat-number">${stats.total_espacios || 0}</div>
@@ -101,8 +135,8 @@ function actualizarTarjetas(stats) {
             </div>
         `;
     } else {
-        // DIRECTOR
-        grid.innerHTML = `
+        // DIRECTOR - 3 tarjetas
+        html = `
             <div class="stat-card">
                 <h3><i class="fas fa-building"></i> Mis Espacios</h3>
                 <div class="stat-number">${stats.total_espacios || 0}</div>
@@ -121,25 +155,47 @@ function actualizarTarjetas(stats) {
         `;
     }
     
-    // ===== ACTUALIZAR LA TARJETA DE OCUPACIÓN GLOBAL =====
-    const porcentajeGlobal = stats.porcentaje_global || 0;
+    grid.innerHTML = html;
+    
+    // Actualizar tarjeta global
     const disponibles = stats.disponibles || 0;
     const usoParcial = esAdmin ? (stats.uso_parcial || 0) : 0;
     const ocupados = stats.ocupados || 0;
+    const total = stats.total_espacios || 1;
     
-    document.getElementById('global-percentage').textContent = `${porcentajeGlobal}%`;
-    document.getElementById('disponibles-count').textContent = disponibles;
-    document.getElementById('parcial-count').textContent = usoParcial;
-    document.getElementById('ocupados-count').textContent = ocupados;
+    actualizarGlobal(disponibles, usoParcial, ocupados, total);
+}
+
+// =====================================================
+// ACTUALIZAR TARJETA GLOBAL
+// =====================================================
+function actualizarGlobal(disponibles, usoParcial, ocupados, total) {
+    const porcentajeDisponibles = total > 0 ? Math.round((disponibles / total) * 100) : 0;
+    
+    // Actualizar porcentaje
+    const globalEl = document.getElementById('global-percentage');
+    if (globalEl) {
+        globalEl.textContent = `${porcentajeDisponibles}%`;
+        // Animación del número
+        globalEl.style.transition = 'all 0.5s ease';
+    }
+    
+    // Actualizar contadores
+    const disponiblesEl = document.getElementById('disponibles-count');
+    const parcialEl = document.getElementById('parcial-count');
+    const ocupadosEl = document.getElementById('ocupados-count');
+    
+    if (disponiblesEl) disponiblesEl.textContent = disponibles;
+    if (parcialEl) parcialEl.textContent = usoParcial;
+    if (ocupadosEl) ocupadosEl.textContent = ocupados;
     
     // Actualizar el círculo
     const circle = document.querySelector('.circle-progress');
     if (circle) {
-        const total = stats.total_espacios || 1;
-        const porcentajeDisponibles = Math.round((disponibles / total) * 100);
+        const safePercentage = Math.min(Math.max(porcentajeDisponibles, 0), 100);
         circle.style.background = `conic-gradient(
-            #27ae60 0% ${porcentajeDisponibles}%,
-            rgba(255, 255, 255, 0.15) ${porcentajeDisponibles}% 100%
+            #27ae60 0% ${safePercentage}%,
+            rgba(255, 255, 255, 0.15) ${safePercentage}% 100%
         )`;
     }
 }
@@ -152,14 +208,19 @@ function actualizarAltaDemanda(aulas) {
     if (!container) return;
     
     if (!aulas || aulas.length === 0) {
-        container.innerHTML = '<p>No hay datos de alta demanda</p>';
+        container.innerHTML = `
+            <div class="empty-state-dashboard" style="padding: 20px;">
+                <i class="fas fa-fire" style="font-size: 2rem;"></i>
+                <p style="margin-top: 8px;">No hay datos de alta demanda</p>
+            </div>
+        `;
         return;
     }
     
-    container.innerHTML = aulas.map(aula => `
-        <div class="aula-item">
+    container.innerHTML = aulas.map((aula, index) => `
+        <div class="aula-item" style="animation: slideIn 0.3s ease ${index * 0.05}s both;">
             <div class="aula-info">
-                <div class="aula-nombre">${aula.identificador}</div>
+                <div class="aula-nombre">${aula.identificador || 'N/A'}</div>
                 <div class="aula-edificio">${aula.edificio || 'Sin edificio'}</div>
             </div>
             <div class="aula-porcentaje high-demand">${aula.porcentaje_ocupacion || 0}%</div>
@@ -175,14 +236,19 @@ function actualizarSubutilizadas(aulas) {
     if (!container) return;
     
     if (!aulas || aulas.length === 0) {
-        container.innerHTML = '<p>No hay datos de aulas subutilizadas</p>';
+        container.innerHTML = `
+            <div class="empty-state-dashboard" style="padding: 20px;">
+                <i class="fas fa-exclamation-triangle" style="font-size: 2rem;"></i>
+                <p style="margin-top: 8px;">No hay datos de aulas subutilizadas</p>
+            </div>
+        `;
         return;
     }
     
-    container.innerHTML = aulas.map(aula => `
-        <div class="aula-item">
+    container.innerHTML = aulas.map((aula, index) => `
+        <div class="aula-item" style="animation: slideIn 0.3s ease ${index * 0.05}s both;">
             <div class="aula-info">
-                <div class="aula-nombre">${aula.identificador}</div>
+                <div class="aula-nombre">${aula.identificador || 'N/A'}</div>
                 <div class="aula-edificio">${aula.edificio || 'Sin edificio'}</div>
             </div>
             <div class="aula-porcentaje underutilized">${aula.porcentaje_ocupacion || 0}%</div>
@@ -199,16 +265,16 @@ function actualizarOcupacionEdificios(edificios) {
     
     if (!edificios || edificios.length === 0) {
         container.innerHTML = `
-            <p style="color: #999; text-align: center; padding: 20px;">
-                <i class="fas fa-building" style="display: block; font-size: 2rem; margin-bottom: 10px; color: #ddd;"></i>
-                No hay datos de ocupación por edificio
-            </p>
+            <div class="empty-state-dashboard" style="padding: 20px;">
+                <i class="fas fa-building" style="font-size: 2rem;"></i>
+                <p style="margin-top: 8px;">No hay datos de ocupación por edificio</p>
+            </div>
         `;
         return;
     }
     
-    container.innerHTML = edificios.map(ed => `
-        <div class="edificio-bar">
+    container.innerHTML = edificios.map((ed, index) => `
+        <div class="edificio-bar" style="animation: slideIn 0.3s ease ${index * 0.08}s both;">
             <span class="nombre">${ed.nombre}</span>
             <div class="barra">
                 <div class="fill" style="width: ${ed.porcentaje || 0}%;"></div>
@@ -223,5 +289,31 @@ function actualizarOcupacionEdificios(edificios) {
 // =====================================================
 document.addEventListener('DOMContentLoaded', function() {
     console.log('🚀 DOMContentLoaded - Dashboard');
+    
+    // Mostrar usuario
+    if (typeof mostrarUsuario === 'function') {
+        mostrarUsuario();
+    }
+    
+    // Cargar dashboard
     cargarDashboard();
+    
+    // Agregar animaciones
+    const style = document.createElement('style');
+    style.textContent = `
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    `;
+    document.head.appendChild(style);
 });

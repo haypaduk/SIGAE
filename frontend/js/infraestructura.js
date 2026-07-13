@@ -38,6 +38,7 @@ async function cargarEdificios() {
             <div class="edificios-header">
                 <div class="edificios-stats">
                     <span class="stat"><strong>${totalEdificios}</strong> edificios</span>
+                    <br>
                     <span class="stat"><strong>${totalAulas}</strong> aulas totales</span>
                 </div>
             </div>
@@ -287,6 +288,88 @@ function verHorario(aulaId) {
         showToast('Error al cargar el horario', 'error');
     });
 }
+
+// =====================================================
+// IMPRIMIR HORARIO
+// =====================================================
+function imprimirHorario() {
+    const contenido = document.getElementById('horario-container');
+    if (!contenido) return;
+    
+    // Crear una ventana de impresión
+    const ventana = window.open('', '_blank', 'width=1200,height=800');
+    if (!ventana) {
+        showToast('Por favor, permite las ventanas emergentes para imprimir', 'warning');
+        return;
+    }
+    
+    // Construir el contenido para imprimir
+    const titulo = document.getElementById('horario-titulo').textContent || 'Horario';
+    const aulaInfo = document.querySelector('.horario-aula-info');
+    const tabla = contenido.querySelector('.horario-table');
+    
+    ventana.document.write(`
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <title>${titulo}</title>
+            <style>
+                body { font-family: 'Segoe UI', Arial, sans-serif; padding: 30px; }
+                h2 { color: #691c32; text-align: center; margin-bottom: 20px; }
+                .info { display: flex; justify-content: center; gap: 30px; margin-bottom: 20px; flex-wrap: wrap; }
+                .info-item { text-align: center; }
+                .info-item label { color: #999; font-size: 0.8rem; display: block; }
+                .info-item value { font-weight: bold; font-size: 1rem; }
+                table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+                th { background: #691c32; color: white; padding: 10px; text-align: center; border: 1px solid #691c32; }
+                td { border: 1px solid #ddd; padding: 8px; text-align: center; }
+                .hora { background: #f8f9fa; font-weight: bold; }
+                .ocupado { background: #fce4ec; }
+                .disponible { background: #e8f5e9; }
+                .leyenda { margin-top: 20px; display: flex; justify-content: center; gap: 20px; flex-wrap: wrap; font-size: 0.8rem; }
+                .leyenda-item { display: flex; align-items: center; gap: 5px; }
+                .dot { width: 12px; height: 12px; border-radius: 50%; display: inline-block; }
+                .dot-green { background: #27ae60; }
+                .dot-red { background: #e74c3c; }
+                @media print {
+                    body { padding: 20px; }
+                    .no-print { display: none; }
+                }
+            </style>
+        </head>
+        <body>
+            <h2>${titulo}</h2>
+            <div class="info">
+                ${aulaInfo ? aulaInfo.innerHTML : ''}
+            </div>
+            ${tabla ? tabla.outerHTML : '<p>No hay datos de horario disponibles</p>'}
+            <div class="leyenda">
+                <span class="leyenda-item"><span class="dot dot-green"></span> Disponible</span>
+                <span class="leyenda-item"><span class="dot dot-red"></span> Ocupado</span>
+            </div>
+            <p style="text-align: center; margin-top: 20px; color: #999; font-size: 0.8rem;">
+                ${new Date().toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric' })}
+            </p>
+            <div class="no-print" style="text-align: center; margin-top: 20px;">
+                <button onclick="window.print()" style="padding: 10px 30px; background: #691c32; color: white; border: none; border-radius: 5px; cursor: pointer;">
+                    Imprimir
+                </button>
+            </div>
+            <script>
+                // Auto-imprimir después de cargar
+                window.onload = function() {
+                    setTimeout(function() {
+                        window.print();
+                    }, 500);
+                };
+            <\/script>
+        </body>
+        </html>
+    `);
+    
+    ventana.document.close();
+}
+
 
 // =====================================================
 // CERRAR MODAL DE HORARIO (GLOBAL)

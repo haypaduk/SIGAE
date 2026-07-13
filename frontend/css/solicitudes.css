@@ -7,58 +7,215 @@
  * - Estados (pendiente, aprobada, rechazada)
  * - Botones de acción
  * - Estado vacío
+ * - Mejores prácticas UI/UX
  */
 
 /* =====================================================
-   CONTENEDOR PRINCIPAL
+   VARIABLES
    ===================================================== */
-.solicitudes-container {
-    padding: 20px;
+:root {
+    --color-pendiente: #f39c12;
+    --color-pendiente-bg: #fff3cd;
+    --color-pendiente-text: #856404;
+    --color-aprobada: #27ae60;
+    --color-aprobada-bg: #d4edda;
+    --color-aprobada-text: #155724;
+    --color-rechazada: #e74c3c;
+    --color-rechazada-bg: #f8d7da;
+    --color-rechazada-text: #721c24;
 }
 
 /* =====================================================
-   CABECERA DE SOLICITUDES
+   PAGE HEADER
    ===================================================== */
-.solicitudes-header {
+.page-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 20px;
+    margin-bottom: 25px;
     flex-wrap: wrap;
-    gap: 15px;
+    gap: 16px;
 }
 
-.solicitudes-header h2 {
-    margin: 0;
+.header-text h1 {
+    font-size: 1.8rem;
+    font-weight: 800;
+    color: #212529;
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 12px;
+    margin: 0 0 4px 0;
 }
 
-.solicitudes-header h2 i {
+.header-text h1 i {
     color: #8B1C2A;
 }
 
+.page-description {
+    color: #6c757d;
+    font-size: 0.95rem;
+    margin: 0;
+}
+
+.header-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
 /* =====================================================
-   BOTÓN CREAR SOLICITUD
+   BOTONES
    ===================================================== */
-.btn-crear-solicitud {
+.btn-primary {
     background: #8B1C2A;
     color: white;
     border: none;
-    padding: 10px 25px;
+    padding: 10px 24px;
     border-radius: 8px;
+    font-size: 0.9rem;
+    font-weight: 600;
     cursor: pointer;
-    font-size: 0.95rem;
-    transition: background 0.3s, transform 0.2s;
-    display: flex;
+    transition: all 0.2s ease;
+    display: inline-flex;
     align-items: center;
     gap: 8px;
 }
 
-.btn-crear-solicitud:hover {
+.btn-primary:hover {
     background: #6B1520;
-    transform: scale(1.02);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(139, 28, 42, 0.3);
+}
+
+.btn-primary:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.btn-secondary {
+    background: #e9ecef;
+    color: #495057;
+    border: none;
+    padding: 10px 24px;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn-secondary:hover {
+    background: #dee2e6;
+    transform: translateY(-2px);
+}
+
+/* =====================================================
+   ESTADÍSTICAS RÁPIDAS
+   ===================================================== */
+.stats-mini-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+.stat-mini-card {
+    background: white;
+    border-radius: 10px;
+    padding: 18px 20px;
+    text-align: center;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+    border: 1px solid #e9ecef;
+    transition: all 0.3s ease;
+}
+
+.stat-mini-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+}
+
+.stat-mini-number {
+    display: block;
+    font-size: 2.2rem;
+    font-weight: 800;
+    color: #8B1C2A;
+    line-height: 1.2;
+}
+
+.stat-mini-label {
+    display: block;
+    font-size: 0.8rem;
+    color: #6c757d;
+    font-weight: 500;
+    margin-top: 4px;
+}
+
+/* Colores específicos para cada estadística */
+.stat-mini-card:nth-child(2) .stat-mini-number {
+    color: #f39c12;
+}
+.stat-mini-card:nth-child(3) .stat-mini-number {
+    color: #27ae60;
+}
+.stat-mini-card:nth-child(4) .stat-mini-number {
+    color: #e74c3c;
+}
+
+/* =====================================================
+   FILTROS
+   ===================================================== */
+.filtros-solicitudes {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 20px;
+    padding: 4px 0;
+}
+
+.filtro-btn {
+    padding: 8px 18px;
+    border: 2px solid #e9ecef;
+    border-radius: 20px;
+    background: white;
+    color: #495057;
+    font-size: 0.85rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.filtro-btn:hover {
+    border-color: #8B1C2A;
+    color: #8B1C2A;
+    background: #f8f9fa;
+}
+
+.filtro-btn.active {
+    border-color: #8B1C2A;
+    background: #8B1C2A;
+    color: white;
+}
+
+.filtro-btn.active:hover {
+    background: #6B1520;
+    border-color: #6B1520;
+}
+
+.filtro-btn i {
+    font-size: 0.85rem;
+}
+
+/* =====================================================
+   LISTA DE SOLICITUDES
+   ===================================================== */
+#solicitudes-list {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
 }
 
 /* =====================================================
@@ -66,25 +223,36 @@
    ===================================================== */
 .solicitud-card {
     background: white;
-    border-radius: 10px;
-    padding: 20px;
-    margin-bottom: 15px;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-    border-left: 4px solid #f39c12;
-    transition: transform 0.2s, box-shadow 0.2s;
+    border-radius: 12px;
+    padding: 22px 24px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+    border-left: 5px solid var(--color-pendiente);
+    transition: all 0.3s ease;
+    animation: slideIn 0.3s ease both;
 }
 
 .solicitud-card:hover {
-    transform: translateY(-2px);
+    transform: translateY(-3px);
     box-shadow: 0 4px 20px rgba(0,0,0,0.08);
 }
 
 .solicitud-card.aprobada {
-    border-left-color: #27ae60;
+    border-left-color: var(--color-aprobada);
 }
 
 .solicitud-card.rechazada {
-    border-left-color: #e74c3c;
+    border-left-color: var(--color-rechazada);
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(15px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 /* =====================================================
@@ -101,80 +269,114 @@
 .solicitante-info {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 12px;
 }
 
 .solicitante-info .foto-miniatura {
-    width: 35px;
-    height: 35px;
+    width: 40px;
+    height: 40px;
     border-radius: 50%;
     object-fit: cover;
-    border: 2px solid #eee;
+    border: 2px solid #e9ecef;
 }
 
-.solicitante-info strong {
-    color: #333;
+.solicitante-info .solicitante-nombre {
+    font-weight: 600;
+    color: #212529;
+    font-size: 0.95rem;
+}
+
+.solicitante-info .solicitante-fecha {
+    font-size: 0.75rem;
+    color: #adb5bd;
+    display: block;
 }
 
 /* =====================================================
    ESTADO DE SOLICITUD
    ===================================================== */
 .solicitud-estado {
-    padding: 4px 14px;
+    padding: 4px 16px;
     border-radius: 20px;
     font-size: 0.75rem;
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.5px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
 }
 
 .estado-pendiente {
-    background: #fff3cd;
-    color: #856404;
+    background: var(--color-pendiente-bg);
+    color: var(--color-pendiente-text);
 }
 
 .estado-aprobada {
-    background: #d4edda;
-    color: #155724;
+    background: var(--color-aprobada-bg);
+    color: var(--color-aprobada-text);
 }
 
 .estado-rechazada {
-    background: #f8d7da;
-    color: #721c24;
+    background: var(--color-rechazada-bg);
+    color: var(--color-rechazada-text);
 }
 
 /* =====================================================
    CUERPO DE TARJETA
    ===================================================== */
 .solicitud-body {
-    margin-top: 12px;
+    margin-top: 14px;
     display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 6px 20px;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 8px 24px;
+    padding: 12px 0;
+    border-top: 1px solid #f1f3f5;
+}
+
+.solicitud-body .campo {
+    display: flex;
+    flex-direction: column;
 }
 
 .solicitud-body .label {
-    color: #999;
-    font-size: 0.8rem;
+    color: #adb5bd;
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-weight: 600;
 }
 
 .solicitud-body .value {
     font-weight: 500;
-    color: #333;
+    color: #212529;
+    font-size: 0.9rem;
+    margin-top: 2px;
 }
 
 .solicitud-body .motivo {
     grid-column: 1 / -1;
 }
 
+.solicitud-body .motivo .value {
+    background: #f8f9fa;
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-weight: 400;
+    font-size: 0.85rem;
+    color: #495057;
+}
+
 /* =====================================================
    ACCIONES DE TARJETA
    ===================================================== */
 .solicitud-acciones {
-    margin-top: 15px;
+    margin-top: 14px;
     display: flex;
     gap: 10px;
     flex-wrap: wrap;
+    padding-top: 14px;
+    border-top: 1px solid #f1f3f5;
 }
 
 .btn-approve {
@@ -182,18 +384,20 @@
     color: white;
     border: none;
     padding: 8px 20px;
-    border-radius: 6px;
+    border-radius: 8px;
     cursor: pointer;
-    font-size: 0.9rem;
-    transition: background 0.3s, transform 0.2s;
-    display: flex;
+    font-size: 0.85rem;
+    font-weight: 600;
+    transition: all 0.2s ease;
+    display: inline-flex;
     align-items: center;
     gap: 6px;
 }
 
 .btn-approve:hover {
     background: #219653;
-    transform: scale(1.02);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(39, 174, 96, 0.3);
 }
 
 .btn-reject {
@@ -201,18 +405,20 @@
     color: white;
     border: none;
     padding: 8px 20px;
-    border-radius: 6px;
+    border-radius: 8px;
     cursor: pointer;
-    font-size: 0.9rem;
-    transition: background 0.3s, transform 0.2s;
-    display: flex;
+    font-size: 0.85rem;
+    font-weight: 600;
+    transition: all 0.2s ease;
+    display: inline-flex;
     align-items: center;
     gap: 6px;
 }
 
 .btn-reject:hover {
     background: #c0392b;
-    transform: scale(1.02);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(231, 76, 60, 0.3);
 }
 
 /* =====================================================
@@ -221,36 +427,208 @@
 .empty-state {
     text-align: center;
     padding: 60px 20px;
-    color: #999;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.06);
 }
 
 .empty-state i {
     font-size: 4rem;
-    color: #ddd;
-    margin-bottom: 15px;
+    color: #dee2e6;
+    margin-bottom: 16px;
+}
+
+.empty-state h3 {
+    color: #495057;
+    margin: 0 0 8px 0;
+    font-size: 1.2rem;
 }
 
 .empty-state p {
-    margin: 5px 0;
+    margin: 4px 0;
+    color: #adb5bd;
 }
 
 .empty-state .sub-text {
     font-size: 0.85rem;
-    color: #bbb;
+    color: #ced4da;
+}
+
+/* =====================================================
+   MODAL DE SOLICITUD
+   ===================================================== */
+.modal-solicitud {
+    max-width: 580px !important;
+    padding: 28px 32px !important;
+    background: #ffffff !important;
+    border-radius: 16px !important;
+    animation: modalFadeIn 0.3s ease-out !important;
+}
+
+#solicitudModal .modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-bottom: 16px;
+    margin-bottom: 20px;
+    border-bottom: 2px solid #f0f2ff;
+}
+
+#solicitudModal .modal-header h3 {
+    font-size: 1.3rem;
+    color: #333;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+#solicitudModal .modal-header h3 i {
+    color: #8B1C2A;
+}
+
+#solicitudModal .modal-close {
+    background: none;
+    border: none;
+    font-size: 1.6rem;
+    color: #999;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    padding: 0 5px;
+    line-height: 1;
+}
+
+#solicitudModal .modal-close:hover {
+    color: #333;
+    transform: rotate(90deg);
+}
+
+/* =====================================================
+   FORMULARIO DEL MODAL
+   ===================================================== */
+#solicitudForm .form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+}
+
+#solicitudForm .form-group {
+    margin-bottom: 16px;
+}
+
+#solicitudForm .form-group label {
+    display: block;
+    margin-bottom: 6px;
+    color: #333;
+    font-weight: 600;
+    font-size: 0.85rem;
+}
+
+#solicitudForm .form-group .required {
+    color: #e74c3c;
+    margin-left: 2px;
+}
+
+#solicitudForm .form-group input,
+#solicitudForm .form-group select,
+#solicitudForm .form-group textarea {
+    width: 100%;
+    padding: 10px 14px;
+    border: 2px solid #e9ecef;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    transition: all 0.3s ease;
+    background: #f8f9fa;
+    color: #212529;
+    font-family: inherit;
+}
+
+#solicitudForm .form-group input:focus,
+#solicitudForm .form-group select:focus,
+#solicitudForm .form-group textarea:focus {
+    outline: none;
+    border-color: #8B1C2A;
+    background: #ffffff;
+    box-shadow: 0 0 0 4px rgba(139, 28, 42, 0.1);
+}
+
+#solicitudForm .form-group textarea {
+    resize: vertical;
+    min-height: 80px;
+    font-family: inherit;
+}
+
+#solicitudForm .form-group input::placeholder,
+#solicitudForm .form-group textarea::placeholder {
+    color: #adb5bd;
+}
+
+#solicitudForm .form-help {
+    display: block;
+    margin-top: 4px;
+    font-size: 0.7rem;
+    color: #adb5bd;
+    font-weight: 400;
+}
+
+/* =====================================================
+   SELECT CON FLECHA PERSONALIZADA
+   ===================================================== */
+.select-wrapper {
+    position: relative;
+}
+
+.select-wrapper select {
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    padding-right: 36px !important;
+    cursor: pointer;
+}
+
+.select-wrapper .select-arrow {
+    position: absolute;
+    right: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #adb5bd;
+    font-size: 0.8rem;
+    pointer-events: none;
+    transition: transform 0.3s ease;
+}
+
+.select-wrapper select:focus + .select-arrow {
+    color: #8B1C2A;
+    transform: translateY(-50%) rotate(180deg);
 }
 
 /* =====================================================
    RESPONSIVE
    ===================================================== */
+@media (max-width: 1024px) {
+    .stats-mini-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
 @media (max-width: 768px) {
-    .solicitudes-header {
+    .page-header {
         flex-direction: column;
         align-items: flex-start;
     }
     
+    .stats-mini-grid {
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+    }
+    
+    .stat-mini-number {
+        font-size: 1.8rem;
+    }
+    
     .solicitud-body {
         grid-template-columns: 1fr;
-        gap: 4px;
+        gap: 6px;
     }
     
     .solicitud-body .motivo {
@@ -264,15 +642,112 @@
     
     .solicitud-acciones {
         width: 100%;
+        flex-direction: column;
     }
     
     .solicitud-acciones button {
-        flex: 1;
-        justify-content: center;
-    }
-    
-    .btn-crear-solicitud {
         width: 100%;
         justify-content: center;
     }
+    
+    .btn-primary {
+        width: 100%;
+        justify-content: center;
+    }
+    
+    .modal-solicitud {
+        padding: 20px 18px !important;
+    }
+    
+    #solicitudForm .form-row {
+        grid-template-columns: 1fr;
+        gap: 0;
+    }
+    
+    .filtros-solicitudes {
+        gap: 6px;
+    }
+    
+    .filtro-btn {
+        font-size: 0.75rem;
+        padding: 6px 14px;
+    }
+}
+
+@media (max-width: 480px) {
+    .stats-mini-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .stat-mini-card {
+        padding: 14px 16px;
+    }
+    
+    .stat-mini-number {
+        font-size: 1.6rem;
+    }
+    
+    .solicitud-card {
+        padding: 16px 18px;
+    }
+    
+    .modal-solicitud {
+        padding: 16px 14px !important;
+    }
+    
+    #solicitudModal .modal-header h3 {
+        font-size: 1rem !important;
+    }
+}
+
+/* =====================================================
+   CORRECCIÓN: POSICIÓN DE LA "X" EN MODAL DE CONFIRMACIÓN
+   ===================================================== */
+
+/* Asegurar que el modal tenga position relative */
+#confirmModal .modal-content {
+    position: relative;
+}
+
+/* Posicionar correctamente el botón de cerrar */
+#confirmModal .modal-close {
+    position: absolute;
+    top: 12px;
+    right: 16px;
+    background: none;
+    border: none;
+    font-size: 1.6rem;
+    color: #999;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    padding: 0 5px;
+    line-height: 1;
+    z-index: 10;
+}
+
+#confirmModal .modal-close:hover {
+    color: #333;
+    transform: rotate(90deg);
+}
+
+/* Asegurar que el header no tenga padding extra que desplace la X */
+#confirmModal .modal-header {
+    position: relative;
+    padding-right: 40px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+/* Si el header tiene un título, asegurar que no se superponga */
+#confirmModal .modal-header h3 {
+    margin: 0;
+    padding-right: 20px;
+}
+
+/* Estilos específicos para el modal de confirmación */
+#confirmModal .modal-content.modal-sm {
+    max-width: 450px;
+    padding: 28px 32px 32px 32px;
+    position: relative;
 }

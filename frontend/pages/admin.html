@@ -4,19 +4,31 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Administración - SIGAE</title>
+    
+    <!-- Meta tags -->
+    <meta name="description" content="Panel de administración del Sistema de Gestión de Aulas y Espacios">
+    <meta name="theme-color" content="#691c32">
+    
+    <!-- CSS -->
     <link rel="stylesheet" href="/css/main.css">
     <link rel="stylesheet" href="/css/admin.css">
+    <link rel="stylesheet" href="/css/cruds.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 </head>
 <body>
     <div class="dashboard-wrapper">
-        <!-- Top Bar -->
-        <div class="top-bar">
+        <!-- ============================================= -->
+        <!-- TOP BAR                                       -->
+        <!-- ============================================= -->
+        <header class="top-bar" role="banner" aria-label="Encabezado principal">
             <div class="top-bar-left">
                 <div class="top-bar-logos">
-                    <img src="/frontend/img/rectoria_cortada.jpg" alt="Logo UTVT" class="logo">
-                    <span class="separator"></span>
-                    <img src="/frontend/img/utvt_logo.jpg" alt="Logo SIGAE" class="logo">
+                    <img src="/frontend/img/rectoria_cortada.jpg" alt="Logo de la Universidad Tecnológica del Valle de Toluca" class="logo" loading="lazy">
+                    <span class="separator" aria-hidden="true"></span>
+                    <img src="/frontend/img/utvt_logo.jpg" alt="Logo SIGAE" class="logo" loading="lazy">
                 </div>
                 <div class="top-bar-text">
                     <div class="titulo">UTVT · SISTEMA DE GESTIÓN</div>
@@ -24,82 +36,242 @@
                 </div>
             </div>
             <div class="top-bar-right">
+                <div class="notifications" id="notifications">
+                    <i class="fas fa-bell"></i>
+                    <span class="notifications-badge" id="notif-count">0</span>
+                </div>
                 <div class="user-info">
-                    <div class="user-avatar" id="user-avatar"></div>
+                    <div class="user-avatar" id="user-avatar">A</div>
                     <div class="user-name" id="user-name">Cargando...</div>
                 </div>
             </div>
-        </div>
+        </header>
 
         <div class="dashboard-body">
-            <!-- Sidebar -->
-            <div class="sidebar">
+            <!-- ============================================= -->
+            <!-- SIDEBAR                                       -->
+            <!-- ============================================= -->
+            <nav class="sidebar" role="navigation" aria-label="Menú principal">
                 <div class="sidebar-header">
-                    <h2><i class="fas fa-cubes"></i> SIGAE</h2>
-                    <p><i class="fas fa-door-open"></i> Gestión de Aulas</p>
+                    <h2><i class="fas fa-cubes" aria-hidden="true"></i> SIGAE</h2>
+                    <p><i class="fas fa-door-open" aria-hidden="true"></i> Gestión de Aulas</p>
                 </div>
-                <ul class="sidebar-menu">
-                    <li><a href="/dashboard"><i class="fas fa-chart-pie"></i> Dashboard</a></li>
-                    <li><a href="/infraestructura"><i class="fas fa-building"></i> Infraestructura</a></li>
-                    <li><a href="/solicitudes"><i class="fas fa-file-alt"></i> Solicitudes</a></li>
-                    <li><a href="/reportes"><i class="fas fa-chart-bar"></i> Reportes</a></li>
-                    <li class="active"><a href="/admin"><i class="fas fa-cogs"></i> Administración</a></li>
-                    <li><a href="#" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Cerrar Sesión</a></li>
+                <ul class="sidebar-menu" role="menubar">
+                    <li role="none">
+                        <a href="/dashboard" role="menuitem">
+                            <i class="fas fa-chart-pie" aria-hidden="true"></i>
+                            <span>Dashboard</span>
+                        </a>
+                    </li>
+                    <li role="none">
+                        <a href="/infraestructura" role="menuitem">
+                            <i class="fas fa-building" aria-hidden="true"></i>
+                            <span>Infraestructura</span>
+                        </a>
+                    </li>
+                    <li role="none">
+                        <a href="/solicitudes" role="menuitem">
+                            <i class="fas fa-file-alt" aria-hidden="true"></i>
+                            <span>Solicitudes</span>
+                        </a>
+                    </li>
+                    <li role="none">
+                        <a href="/reportes" role="menuitem">
+                            <i class="fas fa-chart-bar" aria-hidden="true"></i>
+                            <span>Reportes</span>
+                        </a>
+                    </li>
+                    <li role="none" class="active">
+                        <a href="/admin" role="menuitem" aria-current="page">
+                            <i class="fas fa-cogs" aria-hidden="true"></i>
+                            <span>Administración</span>
+                        </a>
+                    </li>
+                    <li role="none" class="sidebar-divider" aria-hidden="true"></li>
+                    <li role="none">
+                        <a href="#" onclick="logout()" role="menuitem" class="logout-link">
+                            <i class="fas fa-sign-out-alt" aria-hidden="true"></i>
+                            <span>Cerrar Sesión</span>
+                        </a>
+                    </li>
                 </ul>
-            </div>
+            </nav>
 
-            <div class="main-content">
+            <!-- ============================================= -->
+            <!-- CONTENIDO PRINCIPAL                          -->
+            <!-- ============================================= -->
+            <main class="main-content" role="main" aria-label="Contenido principal">
                 <div class="content">
-                    <h2><i class="fas fa-cogs"></i> Panel de Administración</h2>
-                    <p style="color: #666; margin-bottom: 30px;">Gestiona todos los datos del sistema</p>
 
-                    <div class="admin-grid">
-                        <a href="/admin/carreras" class="admin-card">
-                            <i class="fas fa-graduation-cap"></i>
-                            <h3>Carreras</h3>
-                            <p>Gestionar carreras</p>
+                    <!-- Encabezado -->
+                    <div class="page-header">
+                        <div class="header-text">
+                            <h1>
+                                <i class="fas fa-cogs" aria-hidden="true"></i>
+                                Panel de Administración
+                            </h1>
+                            <p class="page-description">Gestiona todos los datos del sistema desde un solo lugar</p>
+                        </div>
+                        <div class="header-actions">
+                            <span class="stats-badge">
+                                <i class="fas fa-database" aria-hidden="true"></i>
+                                <span id="total-modulos">7</span> módulos disponibles
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- Tarjetas de administración -->
+                    <div class="admin-grid" role="list" aria-label="Módulos de administración">
+                        <!-- Carreras -->
+                        <a href="/admin/carreras" class="admin-card" role="listitem" tabindex="0">
+                            <div class="card-icon" style="background: #e8f5e9;">
+                                <i class="fas fa-graduation-cap" aria-hidden="true"></i>
+                            </div>
+                            <div class="card-content">
+                                <h3>Carreras</h3>
+                                <p>Gestionar carreras y programas</p>
+                                <span class="card-action">
+                                    Administrar <i class="fas fa-arrow-right" aria-hidden="true"></i>
+                                </span>
+                            </div>
                         </a>
-                        <a href="/admin/edificios" class="admin-card">
-                            <i class="fas fa-building"></i>
-                            <h3>Edificios</h3>
-                            <p>Gestionar edificios</p>
+
+                        <!-- Edificios -->
+                        <a href="/admin/edificios" class="admin-card" role="listitem" tabindex="0">
+                            <div class="card-icon" style="background: #e3f2fd;">
+                                <i class="fas fa-building" aria-hidden="true"></i>
+                            </div>
+                            <div class="card-content">
+                                <h3>Edificios</h3>
+                                <p>Gestionar edificios y espacios</p>
+                                <span class="card-action">
+                                    Administrar <i class="fas fa-arrow-right" aria-hidden="true"></i>
+                                </span>
+                            </div>
                         </a>
-                        <a href="/admin/aulas" class="admin-card">
-                            <i class="fas fa-chalkboard"></i>
-                            <h3>Aulas</h3>
-                            <p>Gestionar aulas y laboratorios</p>
+
+                        <!-- Aulas -->
+                        <a href="/admin/aulas" class="admin-card" role="listitem" tabindex="0">
+                            <div class="card-icon" style="background: #fff3e0;">
+                                <i class="fas fa-chalkboard" aria-hidden="true"></i>
+                            </div>
+                            <div class="card-content">
+                                <h3>Aulas</h3>
+                                <p>Gestionar aulas y laboratorios</p>
+                                <span class="card-action">
+                                    Administrar <i class="fas fa-arrow-right" aria-hidden="true"></i>
+                                </span>
+                            </div>
                         </a>
-                        <a href="/admin/materias" class="admin-card">
-                            <i class="fas fa-book"></i>
-                            <h3>Materias</h3>
-                            <p>Gestionar materias</p>
+
+                        <!-- Materias -->
+                        <a href="/admin/materias" class="admin-card" role="listitem" tabindex="0">
+                            <div class="card-icon" style="background: #fce4ec;">
+                                <i class="fas fa-book" aria-hidden="true"></i>
+                            </div>
+                            <div class="card-content">
+                                <h3>Materias</h3>
+                                <p>Gestionar materias y asignaturas</p>
+                                <span class="card-action">
+                                    Administrar <i class="fas fa-arrow-right" aria-hidden="true"></i>
+                                </span>
+                            </div>
                         </a>
-                        <a href="/admin/profesores" class="admin-card">
-                            <i class="fas fa-user-tie"></i>
-                            <h3>Profesores</h3>
-                            <p>Gestionar profesores</p>
+
+                        <!-- Profesores -->
+                        <a href="/admin/profesores" class="admin-card" role="listitem" tabindex="0">
+                            <div class="card-icon" style="background: #e8eaf6;">
+                                <i class="fas fa-user-tie" aria-hidden="true"></i>
+                            </div>
+                            <div class="card-content">
+                                <h3>Profesores</h3>
+                                <p>Gestionar profesores y docentes</p>
+                                <span class="card-action">
+                                    Administrar <i class="fas fa-arrow-right" aria-hidden="true"></i>
+                                </span>
+                            </div>
                         </a>
-                        <a href="/admin/directores" class="admin-card">
-                            <i class="fas fa-users"></i>
-                            <h3>Directores</h3>
-                            <p>Gestionar directores</p>
+
+                        <!-- Directores -->
+                        <a href="/admin/directores" class="admin-card" role="listitem" tabindex="0">
+                            <div class="card-icon" style="background: #f3e5f5;">
+                                <i class="fas fa-users" aria-hidden="true"></i>
+                            </div>
+                            <div class="card-content">
+                                <h3>Directores</h3>
+                                <p>Gestionar directores y coordinadores</p>
+                                <span class="card-action">
+                                    Administrar <i class="fas fa-arrow-right" aria-hidden="true"></i>
+                                </span>
+                            </div>
                         </a>
-                        <a href="/admin/configuracion" class="admin-card">
-                            <i class="fas fa-cog"></i>
-                            <h3>Configuración</h3>
-                            <p>Gestionar configuración del sistema</p>
+
+                        <!-- Configuración -->
+                        <a href="/admin/configuracion" class="admin-card" role="listitem" tabindex="0">
+                            <div class="card-icon" style="background: #e0f7fa;">
+                                <i class="fas fa-cog" aria-hidden="true"></i>
+                            </div>
+                            <div class="card-content">
+                                <h3>Configuración</h3>
+                                <p>Gestionar configuración del sistema</p>
+                                <span class="card-action">
+                                    Administrar <i class="fas fa-arrow-right" aria-hidden="true"></i>
+                                </span>
+                            </div>
                         </a>
                     </div>
                 </div>
-            </div>
+            </main>
         </div>
     </div>
 
+    <!-- ============================================= -->
+    <!-- TOAST CONTAINER                              -->
+    <!-- ============================================= -->
+    <div id="toastContainer" class="toast-container" aria-live="polite" aria-atomic="true"></div>
+
+    <!-- ============================================= -->
+    <!-- JAVASCRIPT                                    -->
+    <!-- ============================================= -->
     <script src="/frontend/js/main.js"></script>
+    <script src="/frontend/js/admin/utils.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            mostrarUsuario();
+            // Mostrar usuario
+            if (typeof mostrarUsuario === 'function') {
+                mostrarUsuario();
+            }
+
+            // Animación de entrada para tarjetas
+            const cards = document.querySelectorAll('.admin-card');
+            cards.forEach((card, index) => {
+                card.style.opacity = '0';
+                card.style.transform = 'translateY(20px)';
+                setTimeout(() => {
+                    card.style.transition = 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)';
+                    card.style.opacity = '1';
+                    card.style.transform = 'translateY(0)';
+                }, 100 + (index * 80));
+            });
+
+            // Soporte para teclado en tarjetas (Enter y Espacio)
+            cards.forEach(card => {
+                card.addEventListener('keydown', function(e) {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        this.click();
+                    }
+                });
+            });
         });
+
+        // Función de logout
+        function logout() {
+            if (confirm('¿Estás seguro de que deseas cerrar sesión?')) {
+                localStorage.removeItem('user');
+                window.location.href = '/login';
+            }
+        }
     </script>
 </body>
 </html>

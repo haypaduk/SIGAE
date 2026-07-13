@@ -4,21 +4,33 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Reportes - SIGAE</title>
+    
+    <!-- Meta tags -->
+    <meta name="description" content="Reportes y análisis del Sistema de Gestión de Aulas y Espacios">
+    <meta name="theme-color" content="#691c32">
+    
+    <!-- CSS -->
     <link rel="stylesheet" href="/css/main.css">
     <link rel="stylesheet" href="/css/reportes.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
     <!-- Chart.js para gráficas -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
     <div class="dashboard-wrapper">
-        <!-- Top Bar -->
-        <div class="top-bar">
+        <!-- ============================================= -->
+        <!-- TOP BAR                                       -->
+        <!-- ============================================= -->
+        <header class="top-bar" role="banner" aria-label="Encabezado principal">
             <div class="top-bar-left">
                 <div class="top-bar-logos">
-                    <img src="/frontend/img/rectoria_cortada.jpg" alt="Logo UTVT" class="logo">
-                    <span class="separator"></span>
-                    <img src="/frontend/img/utvt_logo.jpg" alt="Logo SIGAE" class="logo">
+                    <img src="/frontend/img/rectoria_cortada.jpg" alt="Logo de la Universidad Tecnológica del Valle de Toluca" class="logo" loading="lazy">
+                    <span class="separator" aria-hidden="true"></span>
+                    <img src="/frontend/img/utvt_logo.jpg" alt="Logo SIGAE" class="logo" loading="lazy">
                 </div>
                 <div class="top-bar-text">
                     <div class="titulo">UTVT · SISTEMA DE GESTIÓN</div>
@@ -31,35 +43,79 @@
                     <span class="notifications-badge" id="notif-count">0</span>
                 </div>
                 <div class="user-info">
-                    <div class="user-avatar" id="user-avatar"></div>
+                    <div class="user-avatar" id="user-avatar">A</div>
                     <div class="user-name" id="user-name">Cargando...</div>
                 </div>
             </div>
-        </div>
+        </header>
 
         <div class="dashboard-body">
-            <!-- Sidebar -->
-            <div class="sidebar">
+            <!-- ============================================= -->
+            <!-- SIDEBAR                                       -->
+            <!-- ============================================= -->
+            <nav class="sidebar" role="navigation" aria-label="Menú principal">
                 <div class="sidebar-header">
-                    <h2><i class="fas fa-cubes"></i> SIGAE</h2>
-                    <p><i class="fas fa-door-open"></i> Gestión de Aulas</p>
+                    <h2><i class="fas fa-cubes" aria-hidden="true"></i> SIGAE</h2>
+                    <p><i class="fas fa-door-open" aria-hidden="true"></i> Gestión de Aulas</p>
                 </div>
-                <ul class="sidebar-menu">
-                    <li><a href="/dashboard"><i class="fas fa-chart-pie"></i> Dashboard</a></li>
-                    <li><a href="/infraestructura"><i class="fas fa-building"></i> Infraestructura</a></li>
-                    <li><a href="/solicitudes"><i class="fas fa-file-alt"></i> Solicitudes</a></li>
-                    <li class="active"><a href="/reportes"><i class="fas fa-chart-bar"></i> Reportes</a></li>
-                    <li><a href="#" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Cerrar Sesión</a></li>
+                <ul class="sidebar-menu" role="menubar">
+                    <li role="none">
+                        <a href="/dashboard" role="menuitem">
+                            <i class="fas fa-chart-pie" aria-hidden="true"></i>
+                            <span>Dashboard</span>
+                        </a>
+                    </li>
+                    <li role="none">
+                        <a href="/infraestructura" role="menuitem">
+                            <i class="fas fa-building" aria-hidden="true"></i>
+                            <span>Infraestructura</span>
+                        </a>
+                    </li>
+                    <li role="none">
+                        <a href="/solicitudes" role="menuitem">
+                            <i class="fas fa-file-alt" aria-hidden="true"></i>
+                            <span>Solicitudes</span>
+                        </a>
+                    </li>
+                    <li role="none" class="active">
+                        <a href="/reportes" role="menuitem" aria-current="page">
+                            <i class="fas fa-chart-bar" aria-hidden="true"></i>
+                            <span>Reportes</span>
+                        </a>
+                    </li>
+                    <li role="none" class="sidebar-divider" aria-hidden="true"></li>
+                    <li role="none">
+                        <a href="#" onclick="logout()" role="menuitem" class="logout-link">
+                            <i class="fas fa-sign-out-alt" aria-hidden="true"></i>
+                            <span>Cerrar Sesión</span>
+                        </a>
+                    </li>
                 </ul>
-            </div>
+            </nav>
 
-            <div class="main-content">
+            <!-- ============================================= -->
+            <!-- CONTENIDO PRINCIPAL                          -->
+            <!-- ============================================= -->
+            <main class="main-content" role="main" aria-label="Contenido principal">
                 <div class="reportes-container">
-                    <div class="reportes-header">
-                        <h2><i class="fas fa-chart-bar"></i> Reportes y Análisis</h2>
-                        <p id="reporte-header" style="color: #666; margin-top: 5px;">
-                            Ciclo Cuatrimestral <span id="ciclo-actual-text">2026-A</span> - Generado el <span id="fecha-reporte"></span>
-                        </p>
+
+                    <!-- Encabezado -->
+                    <div class="page-header">
+                        <div class="header-text">
+                            <h1>
+                                <i class="fas fa-chart-bar" aria-hidden="true"></i>
+                                Reportes y Análisis
+                            </h1>
+                            <p class="page-description">
+                                Ciclo Cuatrimestral <strong id="ciclo-actual-text">2026-A</strong> - Generado el <strong id="fecha-reporte"></strong>
+                            </p>
+                        </div>
+                        <div class="header-actions">
+                            <button class="btn-primary" onclick="window.print()" aria-label="Imprimir reportes">
+                                <i class="fas fa-print" aria-hidden="true"></i>
+                                Imprimir
+                            </button>
+                        </div>
                     </div>
                                 
                     <!-- ============================================= -->
@@ -68,8 +124,14 @@
                     <div class="reportes-grid">
                         <!-- OCUPACIÓN POR TURNO -->
                         <div class="reporte-card">
-                            <h3><i class="fas fa-clock"></i> Ocupación por Turno</h3>
-                            <p style="color: #999; font-size: 0.8rem; margin-bottom: 12px;">Comparativa matutino vs. vespertino por edificio</p>
+                            <div class="card-header">
+                                <h3>
+                                    <i class="fas fa-clock" aria-hidden="true"></i>
+                                    Ocupación por Turno
+                                </h3>
+                                <span class="card-badge">Comparativa</span>
+                            </div>
+                            <p class="card-subtitle">Comparativa matutino vs. vespertino por edificio</p>
                             <div class="chart-container">
                                 <canvas id="chartOcupacionTurno"></canvas>
                             </div>
@@ -77,8 +139,14 @@
 
                         <!-- TIPOS DE ESPACIO -->
                         <div class="reporte-card">
-                            <h3><i class="fas fa-th-large"></i> Tipos de Espacio</h3>
-                            <p style="color: #999; font-size: 0.8rem; margin-bottom: 12px;">Distribución del inventario total de espacios</p>
+                            <div class="card-header">
+                                <h3>
+                                    <i class="fas fa-th-large" aria-hidden="true"></i>
+                                    Tipos de Espacio
+                                </h3>
+                                <span class="card-badge">Distribución</span>
+                            </div>
+                            <p class="card-subtitle">Distribución del inventario total de espacios</p>
                             <div class="chart-container-small">
                                 <canvas id="chartTiposEspacio"></canvas>
                             </div>
@@ -86,35 +154,54 @@
                     </div>
 
                     <!-- ===== INVENTARIO DE INFRAESTRUCTURA ===== -->
-                    <div class="reporte-card">
-                        <h3><i class="fas fa-table"></i> Inventario de Infraestructura</h3>
-                        <p style="color: #999; font-size: 0.85rem; margin-bottom: 15px;">Resumen completo por edificio</p>
+                    <div class="reporte-card full-width">
+                        <div class="card-header">
+                            <h3>
+                                <i class="fas fa-table" aria-hidden="true"></i>
+                                Inventario de Infraestructura
+                            </h3>
+                            <span class="card-badge">Resumen</span>
+                        </div>
+                        <p class="card-subtitle">Resumen completo por edificio</p>
                         <div class="table-container">
-                            <table>
-                                <thead>
-                                    <tr>
-                                        <th>EDIFICIO</th>
-                                        <th>TOTAL ESPACIOS</th>
-                                        <th>PLANTA BAJA</th>
-                                        <th>PLANTA ALTA</th>
-                                        <th>CAPACIDAD TOTAL</th>
-                                        <th>DISPONIBLES</th>
-                                        <th>OCUPACIÓN PROM.</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="inventario-table">
-                                    <tr>
-                                        <td colspan="7" style="text-align:center;">Cargando datos...</td>
-                                    </tr>
-                                </tbody>
-                            </table>
+                            <div class="table-scroll">
+                                <table>
+                                    <thead>
+                                        <tr>
+                                            <th>Edificio</th>
+                                            <th>Total Espacios</th>
+                                            <th>Planta Baja</th>
+                                            <th>Planta Alta</th>
+                                            <th>Capacidad Total</th>
+                                            <th>Disponibles</th>
+                                            <th>Ocupación Prom.</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="inventario-table">
+                                        <tr>
+                                            <td colspan="7" class="loading-state">
+                                                <div class="spinner" aria-hidden="true"></div>
+                                                <span>Cargando datos...</span>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
+            </main>
         </div>
     </div>
 
+    <!-- ============================================= -->
+    <!-- TOAST CONTAINER                              -->
+    <!-- ============================================= -->
+    <div id="toastContainer" class="toast-container" aria-live="polite" aria-atomic="true"></div>
+
+    <!-- ============================================= -->
+    <!-- JAVASCRIPT                                    -->
+    <!-- ============================================= -->
     <script src="/js/main.js"></script>
     <script src="/js/admin/utils.js"></script>
     <script src="/js/reportes.js"></script>
